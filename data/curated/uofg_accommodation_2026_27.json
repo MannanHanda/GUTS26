@@ -1,0 +1,239 @@
+{
+  "source": {
+    "source_id": "uofg_accommodation",
+    "name": "University of Glasgow Accommodation Services - fees and residence profiles",
+    "source_url": "https://www.gla.ac.uk/undergraduate/accommodation/fees/",
+    "retrieval_method": "manual_curation",
+    "status": "curated",
+    "last_verified_at": "2026-10-17T12:00:00Z",
+    "freshness_window_days": 120,
+    "notes": "Transcribed from the official 2026-27 fees page and each residence profile page. The fees page states rates are subject to revision without notice. Room availability is NOT published and is therefore unknown. Dumfries-campus residences are excluded because they serve the Dumfries campus, not Glasgow."
+  },
+  "academic_year": "2026-27",
+  "bills_included": true,
+  "included_services": ["heating", "utilities", "wifi", "contents_insurance"],
+  "advance_payment_gbp": 200.0,
+  "advance_payment_note": "A GBP 200 advance payment is required to confirm a booking. The fees page does not state whether it is refundable or credited against fees.",
+  "residences": [
+    {
+      "residence_id": "cairncross-house",
+      "name": "Cairncross House",
+      "operator": "University of Glasgow",
+      "address": "20 Kelvinhaugh Place, Glasgow",
+      "postcode": "G3 8NH",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/cairncrosshouse/",
+      "published_walk_to_campus": "15 min",
+      "flat_description": "Single, large single and twin rooms",
+      "cluster_flat": null,
+      "ensuite_all_rooms": null,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Single", "weekly_rent_gbp": 168.00, "contract_total_gbp": 6552.00},
+        {"room_type": "Large Single", "weekly_rent_gbp": 177.94, "contract_total_gbp": 6939.66},
+        {"room_type": "Shared", "weekly_rent_gbp": 129.92, "contract_total_gbp": 5066.88, "shared_room": true}
+      ]
+    },
+    {
+      "residence_id": "kelvinhaugh-gate",
+      "name": "Kelvinhaugh Gate",
+      "operator": "University of Glasgow",
+      "address": "5 Kelvinhaugh Gate, Glasgow",
+      "postcode": "G3 8PE",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/kelvinhaughgate/",
+      "published_walk_to_campus": "15/20 min",
+      "flat_description": "Self contained cluster flats featuring three or five ensuite bedrooms for single occupancy and a common living/kitchen area",
+      "cluster_flat": true,
+      "ensuite_all_rooms": true,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Ensuite Single", "weekly_rent_gbp": 209.51, "contract_total_gbp": 8170.89}
+      ]
+    },
+    {
+      "residence_id": "kelvinhaugh-street",
+      "name": "Kelvinhaugh Street",
+      "operator": "University of Glasgow",
+      "address": "27-91 Kelvinhaugh Street, Glasgow",
+      "postcode": "G3 8PE",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/kelvinhaughstreet/",
+      "published_walk_to_campus": "15/20 min",
+      "flat_description": "5-person flats",
+      "cluster_flat": true,
+      "ensuite_all_rooms": null,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Standard Single", "weekly_rent_gbp": 168.00, "contract_total_gbp": 6552.00}
+      ]
+    },
+    {
+      "residence_id": "maclay-residences",
+      "name": "Maclay Residences",
+      "operator": "University of Glasgow",
+      "address": "9 Cooperage Place, Glasgow",
+      "postcode": "G3 8QP",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/maclayresidences/",
+      "published_walk_to_campus": "15/20 min",
+      "flat_description": "Self contained cluster flats for three or five persons comprising ensuite bedrooms for single occupancy and shared kitchen/living area",
+      "cluster_flat": true,
+      "ensuite_all_rooms": true,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Standard Ensuite", "weekly_rent_gbp": 209.51, "contract_total_gbp": 8170.89},
+        {"room_type": "Large Ensuite", "weekly_rent_gbp": 224.84, "contract_total_gbp": 8768.76}
+      ]
+    },
+    {
+      "residence_id": "murano-street",
+      "name": "Murano Street Student Village",
+      "operator": "University of Glasgow",
+      "address": "13 Caithness Street, Glasgow (contact address published on the residence page)",
+      "postcode": "G20 7SB",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/muranostreetstudentvillage/",
+      "published_walk_to_campus": "1 mile",
+      "flat_description": "4/5- and 10/12-person flats",
+      "cluster_flat": true,
+      "ensuite_all_rooms": null,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Standard Single", "weekly_rent_gbp": 168.00, "contract_total_gbp": 6552.00}
+      ]
+    },
+    {
+      "residence_id": "queen-margaret",
+      "name": "Queen Margaret Residence",
+      "operator": "University of Glasgow",
+      "address": "Bellshaugh Court, Kirklee, Glasgow",
+      "postcode": "G12 0PR",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/queenmargaretresidence/",
+      "published_walk_to_campus": "About 1 mile",
+      "flat_description": "5-person flats",
+      "cluster_flat": true,
+      "ensuite_all_rooms": true,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Ensuite Single", "weekly_rent_gbp": 209.51, "contract_total_gbp": 8170.89}
+      ]
+    },
+    {
+      "residence_id": "student-apartments",
+      "name": "Student Apartments",
+      "operator": "University of Glasgow",
+      "address": "89 Gibson Street, Glasgow",
+      "postcode": "G12 8LD",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/studentapartments/",
+      "published_walk_to_campus": "5 min",
+      "flat_description": "Standard single and twin (shared) rooms",
+      "cluster_flat": null,
+      "ensuite_all_rooms": null,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Single", "weekly_rent_gbp": 168.00, "contract_total_gbp": 6552.00},
+        {"room_type": "Large Single", "weekly_rent_gbp": 177.94, "contract_total_gbp": 6939.66},
+        {"room_type": "Shared", "weekly_rent_gbp": 141.47, "contract_total_gbp": 5517.33, "shared_room": true}
+      ]
+    },
+    {
+      "residence_id": "winton-drive",
+      "name": "Winton Drive",
+      "operator": "University of Glasgow",
+      "address": "24-30 Winton Drive, Glasgow",
+      "postcode": "G12 0QA",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/wintondrive/",
+      "published_walk_to_campus": "About 1 mile",
+      "flat_description": "2- and 5-person flats",
+      "cluster_flat": true,
+      "ensuite_all_rooms": null,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Standard Single", "weekly_rent_gbp": 168.00, "contract_total_gbp": 6552.00}
+      ]
+    },
+    {
+      "residence_id": "havannah-house",
+      "name": "Havannah House (iQ)",
+      "operator": "iQ Student Accommodation (UofG partner residence)",
+      "address": "16 Havannah Street, Glasgow",
+      "postcode": "G4 0AS",
+      "profile_url": "https://www.gla.ac.uk/postgraduate/accommodation/residenceprofiles/havannahhouseiq/",
+      "published_walk_to_campus": "2.6 miles",
+      "flat_description": "En-suite single and studio rooms; 51-week or limited 39-week contracts (fees page lists 51-week rates)",
+      "cluster_flat": null,
+      "ensuite_all_rooms": true,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-09-03",
+      "contract_weeks": 51,
+      "rooms": [
+        {"room_type": "Classic Ensuite", "weekly_rent_gbp": 183.05, "contract_total_gbp": 9335.55, "studio": false},
+        {"room_type": "Premium Ensuite", "weekly_rent_gbp": 187.81, "contract_total_gbp": 9578.31, "studio": false},
+        {"room_type": "Accessible Studio Classic", "weekly_rent_gbp": 227.50, "contract_total_gbp": 11602.50, "studio": true, "accessible": true},
+        {"room_type": "Classic Studio", "weekly_rent_gbp": 227.50, "contract_total_gbp": 11602.50, "studio": true},
+        {"room_type": "Classic Studio +", "weekly_rent_gbp": 229.53, "contract_total_gbp": 11706.03, "studio": true},
+        {"room_type": "Deluxe Studio", "weekly_rent_gbp": 231.91, "contract_total_gbp": 11827.41, "studio": true},
+        {"room_type": "Accessible Studio Premium", "weekly_rent_gbp": 237.51, "contract_total_gbp": 12113.01, "studio": true, "accessible": true},
+        {"room_type": "Premium Studio", "weekly_rent_gbp": 237.51, "contract_total_gbp": 12113.01, "studio": true},
+        {"room_type": "Premium Studio +", "weekly_rent_gbp": 239.40, "contract_total_gbp": 12209.40, "studio": true}
+      ]
+    },
+    {
+      "residence_id": "kelvin-court",
+      "name": "Kelvin Court (Unite)",
+      "operator": "Unite Students (UofG partner residence)",
+      "address": "30 Yorkhill Street, Yorkhill Parade, Glasgow",
+      "postcode": "G3 8RY",
+      "profile_url": "https://www.gla.ac.uk/undergraduate/accommodation/residenceprofiles/kelvincourtunite/",
+      "published_walk_to_campus": "15 min",
+      "flat_description": "Self-contained cluster flats for five to six persons comprising ensuite bedrooms for single occupancy and shared kitchen/living area",
+      "cluster_flat": true,
+      "ensuite_all_rooms": true,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Medium High Double", "weekly_rent_gbp": 218.05, "contract_total_gbp": 8503.95},
+        {"room_type": "Large Standard Double", "weekly_rent_gbp": 218.05, "contract_total_gbp": 8503.95},
+        {"room_type": "Large High Double", "weekly_rent_gbp": 218.05, "contract_total_gbp": 8503.95},
+        {"room_type": "Accessible Double", "weekly_rent_gbp": 218.05, "contract_total_gbp": 8503.95, "accessible": true},
+        {"room_type": "Extra Large Standard Double", "weekly_rent_gbp": 220.50, "contract_total_gbp": 8599.50},
+        {"room_type": "Extra Large High Standard Double", "weekly_rent_gbp": 220.50, "contract_total_gbp": 8599.50}
+      ]
+    },
+    {
+      "residence_id": "thurso-street",
+      "name": "Thurso Street (Unite)",
+      "operator": "Unite Students (UofG partner residence)",
+      "address": "1-3 Thurso Street, Glasgow",
+      "postcode": "G11 6PE",
+      "profile_url": "https://www.gla.ac.uk/postgraduate/accommodation/residenceprofiles/thursostreetunite/",
+      "published_walk_to_campus": "5 min",
+      "flat_description": "Self-contained cluster flats for four to six persons comprising ensuite bedrooms for single occupancy and a shared kitchen/living area",
+      "cluster_flat": true,
+      "ensuite_all_rooms": true,
+      "contract_start": "2026-09-11",
+      "contract_end": "2027-06-11",
+      "contract_weeks": 39,
+      "rooms": [
+        {"room_type": "Large Standard Double", "weekly_rent_gbp": 218.05, "contract_total_gbp": 8503.95},
+        {"room_type": "Large High Double", "weekly_rent_gbp": 218.05, "contract_total_gbp": 8503.95},
+        {"room_type": "Accessible Double", "weekly_rent_gbp": 218.05, "contract_total_gbp": 8503.95, "accessible": true},
+        {"room_type": "Extra Large Standard Double", "weekly_rent_gbp": 220.50, "contract_total_gbp": 8599.50},
+        {"room_type": "Extra Large High Standard Double", "weekly_rent_gbp": 220.50, "contract_total_gbp": 8599.50}
+      ]
+    }
+  ]
+}

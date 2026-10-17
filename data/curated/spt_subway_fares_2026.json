@@ -1,0 +1,33 @@
+{
+  "source": {
+    "source_id": "spt_subway_fares",
+    "name": "Strathclyde Partnership for Transport (SPT) - Subway tickets and fares",
+    "source_url": "https://www.spt.co.uk/tickets/subway-tickets/",
+    "retrieval_method": "manual_curation",
+    "status": "curated",
+    "last_verified_at": "2026-10-17T12:00:00Z",
+    "freshness_window_days": 120,
+    "notes": "Adult Smartcard fares effective 5 January 2026 (SPT notice of 19/12/2025: https://www.spt.co.uk/about-us/news/subway-fares-revised-for-2026/). SPT publishes no student or young-person Subway fare; students are therefore priced at adult fares. The tickets page lists GBP 60 for the 28-day ticket (station price); the notice gives GBP 55 when bought online."
+  },
+  "smartcard_cost_gbp": 5.0,
+  "smartcard_note": "Personalised Smartcard registered online. Required for season tickets.",
+  "adult_single_smartcard_gbp": 1.80,
+  "adult_daily_smartcard_gbp": 3.40,
+  "season_tickets": [
+    {"ticket_id": "subway-28day-online", "name": "Adult 28-day season (bought online)", "price_gbp": 55.0, "validity_days": 28},
+    {"ticket_id": "subway-28day-station", "name": "Adult 28-day season (bought in station)", "price_gbp": 60.0, "validity_days": 28}
+  ],
+  "network_order": [
+    "9400ZZGLHIL", "9400ZZGLKEB", "9400ZZGLSTG", "9400ZZGLCOW", "9400ZZGLBUC",
+    "9400ZZGLSTE", "9400ZZGLBRI", "9400ZZGLWES", "9400ZZGLSHL", "9400ZZGLKIN",
+    "9400ZZGLCES", "9400ZZGLIBX", "9400ZZGLGOV", "9400ZZGLPRT", "9400ZZGLKEL"
+  ],
+  "timing_estimate": {
+    "status": "estimated",
+    "full_circuit_minutes": 24,
+    "stations": 15,
+    "peak_headway_minutes": 4,
+    "source_url": "https://www.uktram.org/all-systems/spt-subway",
+    "notes": "Secondary source (not SPT). In-train time is estimated as 24/15 = 1.6 minutes per station-to-station segment, plus an average wait of half the 4-minute peak headway. These are estimates, not timetable data."
+  }
+}

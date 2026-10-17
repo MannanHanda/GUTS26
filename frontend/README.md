@@ -1,95 +1,111 @@
-# The Hidden Cost of Being a Student
+# Uniwise — Frontend
 
-> **GUTS Hackathon 2026** — *Make student life cost less.*  
-> Frontend Architecture: Responsive Web App (Next.js 16 + React 19 + Tailwind CSS) & Functional Mobile App (React Native Expo).
+> **GUTS Hackathon 2026** — the experience layer for Uniwise.
+> Web app (Next.js 16, React 19, Tailwind CSS 4) and mobile app (React Native with Expo).
 
----
-
-## 💡 The Problem & Value Proposition
-
-Students often make decisions about **accommodation**, **banking**, and **transport** in isolation:
-1. They pick cheap accommodation further from campus without factoring in **£70+/month transit passes** or **5+ hours lost weekly** commuting.
-2. They sign leases with excluded utility bills, risking **unbudgeted £30+/week winter energy price spikes**.
-3. They pay high upfront **5-week security deposits** or miss out on **free 4-year Railcards (saving 1/3 on travel)**.
-
-**Our product brings these decisions together** so students can see their **True Living Cost** (£/week and £/month) and trade-offs before signing a tenancy.
+This folder is the **experience layer only**. The frontends collect the student's profile, call the backend API and display its results. They do not calculate the recommendation themselves (see `PROJECT_SPEC.md` §15.1).
 
 ---
 
-## 🚀 Live Demonstrations & Pages
+## 💡 The problem
 
-### Web Application (`web/`)
-- **Page 1 — Landing Page (`/`):**
-  - Hero headline: *"Make student life cost less."*
-  - Interactive **AHA! simulator**: Compares a "cheap outer flat" (£118 rent + £30 bills + £16.50 subway = £164.50 true cost + 5.8h travel) vs. "campus hall" (£185 all-in + 0 commute).
-  - Transparent data & Responsible AI ethics declaration.
-- **Page 2 — Student Profile Setup (`/onboarding`):**
-  - 4-step wizard: Study location (University of Glasgow, Strathclyde, GCU), living budget, weekly journeys, transit preferences, banking priorities, and cost vs. commute trade-off slider.
-- **Page 3 — True Living Cost Dashboard (`/dashboard`):**
-  - True Weekly Cost, Estimated Monthly, Upfront Cash Barrier, Budget Margin status, and Commuting Burden.
-  - **AI Recommended Decision Package** with clear *"Why this was recommended"* rationale and honest trade-offs.
-  - Recharts cost distribution chart and dynamic alternative package switcher.
-- **Page 4 — Accommodation Comparison (`/accommodation`):**
-  - Detailed listing cards comparing advertised rent, excluded bills, deposits, commute times, and true living cost.
-  - Filters: En-suite, PBSA halls, private flats, bills-included toggle, and sort by true cost.
-- **Module 2 — Banking Comparison (`/banking`):**
-  - Overdraft limits, Free 4-Year Railcard perks, international fees, and tailored advice.
-- **Module 3 — Transport Passes (`/transport`):**
-  - Glasgow Subway Smartcard, First Bus, ScotRail, Nextbike cycling, and break-even analysis vs. pay-as-you-go single fares.
-- **Module 4 — NHS Healthcare & Rights (`/healthcare`):**
-  - Scotland vs. England advantages: 100% Free Prescriptions (£0) and Free Dental for under 26s.
-  - International Student Visa Health Surcharge (IHS) transparency (£776/year).
-  - Directory of Glasgow student GP practices, Minor Injuries (Stobhill), and Pharmacy First walk-ins.
+Students choose accommodation, transport and other essentials separately, using information spread across many websites. A cheap room far from campus can cost more once commuting is added, and advertised rent rarely shows the full monthly and upfront cost.
 
-### Mobile Application (`mobile/`)
-- Native React Native interface (`App.tsx`) with 5 platform-tailored tabs:
-  - **True Cost**: Key financial metrics, AI recommended combination, trade-offs, and alternative switcher.
-  - **Housing**: Student properties with true cost calculations.
-  - **Transit**: Glasgow transit passes with commute time metrics.
-  - **Banking**: Overdraft limits and travel incentives.
-  - **Health**: NHS Scotland entitlements, £0 prescriptions, and campus clinics.
-  - **Budget Quick-Adjust Modal**: Rapid live updates to budget allowance.
+Uniwise brings these together: the student enters their budget, commute limit and priorities, and the backend returns the option that fits best overall, with its costs, trade-offs, unknowns and sources.
 
 ---
 
-## 🔌 Teammate Backend Integration (Contract Specification)
+## 🧱 Stack
 
-Both Web and Mobile integrate with backend services via agreed API contracts defined in `shared/`:
-- `GET /api/v1/universities`
-- `GET /api/v1/accommodations?maxRent=200&billsIncluded=true`
-- `GET /api/v1/banking`
-- `GET /api/v1/transport`
-- `POST /api/v1/recommendations` (Accepts `{ profile }`, returns ranked packages with trade-offs)
+| App | Technology |
+|---|---|
+| Web (primary demo) | Next.js 16.4 (App Router), React 19.3, TypeScript, Tailwind CSS 4, Recharts 3 |
+| Mobile (secondary) | Expo SDK 58, React Native 0.88, TypeScript |
+| Shared | Types and API client in `shared/`, copied into `web/src/shared/` and `mobile/src/shared/` |
 
-### Zero-Downtime Resilience
-If teammate backends are offline, deploying, or restarting during hackathon judging, the frontend **automatically falls back to our deterministic contract calculation engine and rich Glasgow mock dataset**.
+---
 
-To connect to a live backend:
+## 📄 Pages and their data
+
+| Page | Purpose | Backend endpoint | Status |
+|---|---|---|---|
+| `/` Landing | Explain the problem and the product | — | Built; its example comparison uses mock numbers that must be replaced |
+| `/onboarding` | Collect the student profile (budget, commute limit, priorities, transport modes) | `POST /api/v1/recommendations/setup` | Built, not connected |
+| `/dashboard` | Show the recommendation, costs, score breakdown, reasons, trade-offs, unknowns and alternatives | Response of `POST /api/v1/recommendations/setup` | Built, not connected |
+| `/accommodation` | Browse, filter and compare rooms | `GET /api/v1/accommodations`, `GET /api/v1/accommodations/{id}` | Built, not connected |
+| `/transport` | Compare walking, cycling and Subway from a residence to campus | `GET /api/v1/transport/options` | Built, not connected |
+| `/banking` | Compare student bank accounts | None yet (P1) | No verified data — hide or label until sourced |
+| `/healthcare` | NHS entitlements and student health information | None (outside the spec's scope) | No verified data — hide or label until sourced |
+
+The mobile app (`mobile/App.tsx`) has matching tabs and follows the same rules.
+
+**Scope today:** University of Glasgow residences and the Gilmorehill campus. The mock dataset and the landing page also mention Strathclyde and Glasgow Caledonian University; the backend has no data for them.
+
+---
+
+## 🔌 Backend API contract
+
+The single source of truth is [`../docs/openapi.json`](../docs/openapi.json), also browsable at `http://127.0.0.1:8000/docs` while the backend runs. Frontend types should be generated from it so the two cannot drift.
+
+| Method | Path | Used by |
+|---|---|---|
+| GET | `/api/v1/health` | Connection and data status indicator |
+| GET | `/api/v1/sources/status` | Sources and freshness panel |
+| GET | `/api/v1/accommodations` | Accommodation page |
+| GET | `/api/v1/accommodations/{accommodation_id}` | Accommodation detail |
+| GET | `/api/v1/transport/options` | Transport page |
+| POST | `/api/v1/recommendations/setup` | Onboarding and dashboard; re-called when a preference changes |
+
+Errors always arrive as `{ "error": { "code", "message", "details" } }` with codes `validation_error` (422), `not_found` (404) and `provider_unavailable` (503).
+
+### Rules for displaying results
+
+- Show unknown values as unknown (`null` means unknown, `0` means genuinely zero or included).
+- Show monthly and upfront costs separately.
+- Show each source's status (`curated`, `cached`, `estimated`, `stale`, `unavailable`) and link to it.
+- Present the score as relative to the options that met the student's limits, not as an absolute rating.
+- Describe the recommendation as produced by the decision engine — the backend uses no AI.
+- When the backend is unreachable, show an error or stale-data state. Never substitute mock data presented as real.
+
+---
+
+## 🛠️ Changes still needed to match the spec
+
+- [ ] Delete the local calculation engine: `shared/calculations/cost-engine.ts` and its copies in `web/src/shared/` and `mobile/src/shared/`.
+- [ ] Delete the mock dataset: `shared/mock-data/glasgow-dataset.ts` and its copies.
+- [ ] Remove the mock fallback from `api-client.ts` and point it at the endpoints above.
+- [ ] Generate TypeScript types from `docs/openapi.json` and replace `shared/types/index.ts`.
+- [ ] Replace "AI Recommended" wording (`web/src/app/dashboard/page.tsx`, `mobile/App.tsx`) with "Recommended".
+- [ ] Remove references to other universities (landing page, mock dataset) until the backend has data for them.
+- [ ] Hide or clearly label the banking and healthcare pages until they have sourced data.
+
+---
+
+## 🚀 Quick start
+
+Start the backend first (see the root [README](../README.md)), then:
+
 ```bash
-# In frontend/web/.env.local or production environment:
-NEXT_PUBLIC_API_URL=https://your-teammate-backend.com
-```
-
----
-
-## 🛠️ Quick Start Instructions
-
-### 1. Run the Website (Next.js)
-```bash
+# Web app
 cd frontend/web
+npm install
+echo NEXT_PUBLIC_API_URL=http://localhost:8000 > .env.local
 npm run dev
-# Open http://localhost:3000 in your browser
+# Open http://localhost:3000
 ```
 
-### 2. Build Web for Production
 ```bash
+# Mobile app
+cd frontend/mobile
+npm install
+npm run web    # or: npm run android / npm run ios
+```
+
+`NEXT_PUBLIC_API_URL` has no default, so it must be set. The backend accepts browser requests from `http://localhost:3000` (Next.js) and `http://localhost:8081` (Expo web); other origins can be added with the backend's `UNIWISE_CORS_ORIGINS` environment variable.
+
+```bash
+# Production build of the web app
 cd frontend/web
 npm run build
 npm run start
-```
-
-### 3. Run the Mobile App (Expo)
-```bash
-cd frontend/mobile
-npm run web    # or npm run android / npm run ios
 ```
