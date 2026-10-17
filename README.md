@@ -21,7 +21,8 @@
 | Accommodation and commute data | Working (University of Glasgow residences, Gilmorehill campus) |
 | Web and mobile frontends | Built, **not yet connected** to the backend |
 | Banking, healthcare, mobile plans | Frontend pages exist; **no verified backend data yet** |
-| Docker Compose, Supabase, AI summaries | Not started |
+| Docker Compose (backend + web) | Working |
+| Supabase, AI summaries | Not started |
 
 > **Note on the frontend:** it still contains a local calculation engine and mock Glasgow dataset (`frontend/*/shared/`). These are being removed so that every figure comes from the backend. Until then, values shown when the frontend runs on its own are **mock data, not verified information**.
 
@@ -83,6 +84,27 @@ The running backend calls no external service. Route data is fetched from public
 
 ## 🚀 Quick start
 
+### Option A: Docker (backend + web app)
+
+Requires Docker Desktop running.
+
+```bash
+docker compose up --build -d     # first build takes several minutes
+# Web app: http://localhost:3000    API docs: http://localhost:8000/docs
+docker compose ps                # status (backend shows "healthy" when ready)
+docker compose logs -f backend   # follow logs
+docker compose run --rm --no-deps backend python -m pytest -q   # tests inside the container
+docker compose down              # stop and remove the containers
+```
+
+Notes:
+- `NEXT_PUBLIC_API_URL` is baked into the web build. After changing it, rebuild with `docker compose build web`.
+- The data files are copied into the backend image. After editing `data/` or running a refresh, rebuild with `docker compose build backend`.
+- Ports 3000 and 8000 must be free (stop any locally running dev servers first).
+- The mobile app is not containerised; run it with Expo as below.
+
+### Option B: run locally
+
 ### Backend (Python 3.12+, tested on 3.14)
 
 ```bash
@@ -141,7 +163,7 @@ Every error uses one format:
 { "error": { "code": "validation_error", "message": "...", "details": [] } }
 ```
 
-Codes: `validation_error` (422), `not_found` (404), `provider_unavailable` (503).
+Codes: `validation_error` (422), `not_found` (404), `method_not_allowed` (405), `provider_unavailable` (503), `internal_error` (500).
 
 The backend accepts browser requests from `http://localhost:3000` (Next.js) and `http://localhost:8081` (Expo web). Add others with the `UNIWISE_CORS_ORIGINS` environment variable.
 
@@ -181,7 +203,7 @@ If nothing passes, the API returns `no_feasible_options` and suggests which limi
 - Only University of Glasgow residences and the Gilmorehill campus are covered.
 - Subway journey times are estimates; bus journeys are not modelled.
 - The frontend is not yet connected to the backend (see status above).
-- No Docker setup yet.
+- The web Docker image is large (about 1.35 GB); Next.js `standalone` output would shrink it.
 
 ---
 

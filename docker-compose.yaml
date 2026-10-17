@@ -1,0 +1,24 @@
+# Start:  docker compose up --build      Stop:  docker compose down
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      UNIWISE_CORS_ORIGINS: ${UNIWISE_CORS_ORIGINS:-http://localhost:3000,http://localhost:8081}
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend/web
+      args:
+        # The browser calls the backend through the published port, not the service name.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
