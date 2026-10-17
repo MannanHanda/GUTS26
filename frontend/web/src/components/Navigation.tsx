@@ -51,7 +51,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1" aria-label="Main Navigation">
+          <nav suppressHydrationWarning className="hidden md:flex items-center space-x-1" aria-label="Main Navigation">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -59,6 +59,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  suppressHydrationWarning
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                     isActive
                       ? 'bg-slate-100 text-slate-900 border border-slate-200'
@@ -120,6 +121,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                suppressHydrationWarning
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold ${
                   isActive
