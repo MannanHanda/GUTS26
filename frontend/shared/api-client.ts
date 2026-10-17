@@ -2,6 +2,8 @@ import {
   AccommodationListing,
   ApiResponse,
   BankAccount,
+  ChatMessage,
+  ChatResponse,
   DecisionCombination,
   HealthcareBenefit,
   HealthcareClinic,
@@ -22,6 +24,8 @@ import {
   calculateTrueLivingCost,
   synthesizeDecisionCombinations,
 } from './calculations/cost-engine';
+import { generateChatbotResponse } from './calculations/chat-engine';
+
 
 export class StudentFinanceApiClient {
   private baseUrl: string;
@@ -265,6 +269,48 @@ export class StudentFinanceApiClient {
   ): TrueCostSummary {
     return calculateTrueLivingCost(accommodation, transport, profile);
   }
+
+  public async sendChatMessage(
+    userMessage: string,
+    history?: ChatMessage[],
+    profile?: Partial<StudentProfile>
+  ): Promise<ApiResponse<ChatResponse>> {
+    if (this.baseUrl) {
+      try {
+        const res = await fetch(`${this.baseUrl}/api/v1/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMessage, history, profile }),
+          signal: AbortSignal.timeout(4000),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          return {
+            success: true,
+            data: json.data || json,
+            meta: { timestamp: new Date().toISOString(), source: 'live_backend' },
+          };
+        }
+      } catch (err) {
+        console.warn('Backend chat unreachable, using local AI engine fallback:', err);
+      }
+    }
+
+    // Local deterministic conversational intelligence
+    const fallbackResponse = generateChatbotResponse({
+      userMessage,
+      history,
+      studentCategory: profile?.studentStatus,
+      university: profile?.university,
+    });
+
+    return {
+      success: true,
+      data: fallbackResponse,
+      meta: { timestamp: new Date().toISOString(), source: 'contract_fallback_mock' },
+    };
+  }
 }
+
 
 export const apiClient = new StudentFinanceApiClient();

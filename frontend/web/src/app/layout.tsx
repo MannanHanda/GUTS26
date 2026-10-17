@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar, Footer } from "@/components/Navigation";
+import { ChatBotWidget } from "@/components/ChatBotWidget";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,7 +27,9 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1" suppressHydrationWarning>{children}</main>
         <Footer />
+        <ChatBotWidget />
       </body>
     </html>
   );
 }
+

@@ -40,15 +40,21 @@ Students often make decisions about **accommodation**, **banking**, and **transp
   - Scotland vs. England advantages: 100% Free Prescriptions (£0) and Free Dental for under 26s.
   - International Student Visa Health Surcharge (IHS) transparency (£776/year).
   - Directory of Glasgow student GP practices, Minor Injuries (Stobhill), and Pharmacy First walk-ins.
+- **Module 5 — Finley AI Student Living Advisor (`/chat` & Global Widget):**
+  - Persistent floating chatbot widget mounted across all pages + full-screen 2-column workspace.
+  - Instant rent calculator: Parses advertised rent, computes bills & transit, reveals 5-week deposit & Day-1 move-in barrier.
+  - Conversational guide for Scottish Under-22 Free Bus Travel (NEC card), NHS free prescriptions, Santander 4-year Railcards, and student council tax exemption.
 
 ### Mobile Application (`mobile/`)
-- Native React Native interface (`App.tsx`) with 5 platform-tailored tabs:
+- Native React Native interface (`App.tsx`) with 6 platform-tailored tabs:
   - **True Cost**: Key financial metrics, AI recommended combination, trade-offs, and alternative switcher.
   - **Housing**: Student properties with true cost calculations.
   - **Transit**: Glasgow transit passes with commute time metrics.
   - **Banking**: Overdraft limits and travel incentives.
   - **Health**: NHS Scotland entitlements, £0 prescriptions, and campus clinics.
+  - **AI Chat**: Conversational advisor with quick calculation chips and instant answers.
   - **Budget Quick-Adjust Modal**: Rapid live updates to budget allowance.
+
 
 ---
 
