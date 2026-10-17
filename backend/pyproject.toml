@@ -1,0 +1,18 @@
+[project]
+name = "uniwise-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF", "ISC", "FURB"]
+
+[tool.ruff.lint.per-file-ignores]
+# FastAPI's dependency-injection idiom places calls such as Depends() in defaults by design.
+"app/api/routes.py" = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

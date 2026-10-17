@@ -1,0 +1,27 @@
+{
+  "source": {
+    "source_id": "transport_scotland_concessions",
+    "name": "Transport Scotland - Under 22s free bus travel",
+    "source_url": "https://www.transport.gov.scot/concessionary-travel/under-22s-free-bus-travel/",
+    "retrieval_method": "manual_curation",
+    "status": "curated",
+    "last_verified_at": "2026-10-17T12:00:00Z",
+    "freshness_window_days": 180,
+    "notes": "Official scheme page. The page states eligibility as 'under 22 years old and live in Scotland'. It does not explain how students from elsewhere who live in Scotland during term are treated."
+  },
+  "schemes": [
+    {
+      "scheme_id": "under22-free-bus",
+      "name": "Under 22s Free Bus Travel (National Entitlement Card)",
+      "modes": ["bus"],
+      "potential_value": "Free travel on nearly all local registered and long-distance scheduled bus services in Scotland.",
+      "eligibility_summary": "Aged 5 to 21 and living in Scotland.",
+      "restrictions": [
+        "Bus only - does not cover the Glasgow Subway or rail.",
+        "A card used as a university matriculation card cannot be used for free bus travel; a separate card is needed.",
+        "Applications are reviewed and can take up to ten working days online."
+      ],
+      "apply_url": "https://getyournec.scot/"
+    }
+  ]
+}

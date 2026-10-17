@@ -1,27 +1,7 @@
-import {
-  AccommodationListing,
-  ApiResponse,
-  BankAccount,
-  DecisionCombination,
-  HealthcareBenefit,
-  HealthcareClinic,
-  StudentProfile,
-  TransportOption,
-  TrueCostSummary,
-  UniversityInfo,
-} from './types';
-import {
-  MOCK_ACCOMMODATIONS,
-  MOCK_BANK_ACCOUNTS,
-  MOCK_HEALTHCARE_BENEFITS,
-  MOCK_HEALTHCARE_CLINICS,
-  MOCK_TRANSPORTS,
-  UNIVERSITIES,
-} from './mock-data/glasgow-dataset';
-import {
-  calculateTrueLivingCost,
-  synthesizeDecisionCombinations,
-} from './calculations/cost-engine';
+// Legacy client with sample-data fallback. Kept only for the banking and healthcare
+// pages, which have no verified backend data yet. Real data: ./api/client.ts.
+import { ApiResponse, BankAccount, HealthcareBenefit, HealthcareClinic } from './types';
+import { MOCK_BANK_ACCOUNTS, MOCK_HEALTHCARE_BENEFITS, MOCK_HEALTHCARE_CLINICS } from './mock-data/glasgow-dataset';
 
 export class StudentFinanceApiClient {
   private baseUrl: string;
@@ -35,78 +15,6 @@ export class StudentFinanceApiClient {
 
   public setBaseUrl(url: string) {
     this.baseUrl = url;
-  }
-
-  public async getUniversities(): Promise<ApiResponse<UniversityInfo[]>> {
-    if (this.baseUrl) {
-      try {
-        const res = await fetch(`${this.baseUrl}/api/v1/universities`, {
-          signal: AbortSignal.timeout(3000),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          return {
-            success: true,
-            data: json.data || json,
-            meta: { timestamp: new Date().toISOString(), source: 'live_backend' },
-          };
-        }
-      } catch (err) {
-        console.warn('Backend unavailable, using fallback mock data:', err);
-      }
-    }
-
-    return {
-      success: true,
-      data: UNIVERSITIES,
-      meta: { timestamp: new Date().toISOString(), source: 'contract_fallback_mock' },
-    };
-  }
-
-  public async getAccommodations(filters?: {
-    maxWeeklyRent?: number;
-    roomType?: string;
-    billsIncludedOnly?: boolean;
-  }): Promise<ApiResponse<AccommodationListing[]>> {
-    if (this.baseUrl) {
-      try {
-        const params = new URLSearchParams();
-        if (filters?.maxWeeklyRent) params.set('maxRent', filters.maxWeeklyRent.toString());
-        if (filters?.roomType) params.set('roomType', filters.roomType);
-        if (filters?.billsIncludedOnly) params.set('billsIncluded', 'true');
-
-        const res = await fetch(`${this.baseUrl}/api/v1/accommodations?${params.toString()}`, {
-          signal: AbortSignal.timeout(3000),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          return {
-            success: true,
-            data: json.data || json,
-            meta: { timestamp: new Date().toISOString(), source: 'live_backend' },
-          };
-        }
-      } catch (err) {
-        console.warn('Backend accommodations fetch failed, using fallback mock:', err);
-      }
-    }
-
-    let items = [...MOCK_ACCOMMODATIONS];
-    if (filters?.maxWeeklyRent) {
-      items = items.filter((a) => a.weeklyRent <= filters.maxWeeklyRent!);
-    }
-    if (filters?.billsIncludedOnly) {
-      items = items.filter((a) => a.billsIncluded);
-    }
-    if (filters?.roomType && filters.roomType !== 'all') {
-      items = items.filter((a) => a.roomType === filters.roomType);
-    }
-
-    return {
-      success: true,
-      data: items,
-      meta: { timestamp: new Date().toISOString(), source: 'contract_fallback_mock' },
-    };
   }
 
   public async getBankingOptions(): Promise<ApiResponse<BankAccount[]>> {
@@ -131,71 +39,6 @@ export class StudentFinanceApiClient {
     return {
       success: true,
       data: MOCK_BANK_ACCOUNTS,
-      meta: { timestamp: new Date().toISOString(), source: 'contract_fallback_mock' },
-    };
-  }
-
-  public async getTransportOptions(): Promise<ApiResponse<TransportOption[]>> {
-    if (this.baseUrl) {
-      try {
-        const res = await fetch(`${this.baseUrl}/api/v1/transport`, {
-          signal: AbortSignal.timeout(3000),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          return {
-            success: true,
-            data: json.data || json,
-            meta: { timestamp: new Date().toISOString(), source: 'live_backend' },
-          };
-        }
-      } catch (err) {
-        console.warn('Backend transport fetch failed, fallback active:', err);
-      }
-    }
-
-    return {
-      success: true,
-      data: MOCK_TRANSPORTS,
-      meta: { timestamp: new Date().toISOString(), source: 'contract_fallback_mock' },
-    };
-  }
-
-  public async getRecommendations(
-    profile: StudentProfile
-  ): Promise<ApiResponse<DecisionCombination[]>> {
-    if (this.baseUrl) {
-      try {
-        const res = await fetch(`${this.baseUrl}/api/v1/recommendations`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profile }),
-          signal: AbortSignal.timeout(4000),
-        });
-        if (res.ok) {
-          const json = await res.json();
-          return {
-            success: true,
-            data: json.data || json,
-            meta: { timestamp: new Date().toISOString(), source: 'live_backend' },
-          };
-        }
-      } catch (err) {
-        console.warn('Backend recommendations failed, computing locally:', err);
-      }
-    }
-
-    // Fallback: Compute with full fidelity in frontend
-    const combos = synthesizeDecisionCombinations(
-      MOCK_ACCOMMODATIONS,
-      MOCK_TRANSPORTS,
-      MOCK_BANK_ACCOUNTS,
-      profile
-    );
-
-    return {
-      success: true,
-      data: combos,
       meta: { timestamp: new Date().toISOString(), source: 'contract_fallback_mock' },
     };
   }
@@ -256,14 +99,6 @@ export class StudentFinanceApiClient {
       data,
       meta: { timestamp: new Date().toISOString(), source: 'contract_fallback_mock' },
     };
-  }
-
-  public calculateTrueCost(
-    accommodation: AccommodationListing,
-    transport: TransportOption,
-    profile: StudentProfile
-  ): TrueCostSummary {
-    return calculateTrueLivingCost(accommodation, transport, profile);
   }
 }
 

@@ -1,0 +1,15 @@
+{
+  "source": {
+    "source_id": "uofg_campuses",
+    "name": "University of Glasgow campus locations",
+    "source_url": "https://www.gla.ac.uk/explore/maps/",
+    "retrieval_method": "manual_curation",
+    "status": "curated",
+    "last_verified_at": "2026-10-17T12:00:00Z",
+    "freshness_window_days": 365,
+    "notes": "Campus reference point is the University's main postcode, geocoded via postcodes.io. Only the Gilmorehill main campus has routes computed in this release."
+  },
+  "campuses": [
+    {"campus_id": "gilmorehill", "name": "University of Glasgow - Gilmorehill (main campus)", "postcode": "G12 8QQ"}
+  ]
+}

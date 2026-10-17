@@ -1,324 +1,158 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { 
-  Building2, 
-  MapPin, 
-  CheckCircle2, 
-  Clock, 
-  ExternalLink, 
-  ArrowUpDown,
-  Search,
-  Check,
-  Flame,
-  Info,
-  ShieldCheck
-} from 'lucide-react';
-import { AccommodationListing, StudentProfile } from '@shared/types';
-import { apiClient } from '@shared/api-client';
-import { DEFAULT_STUDENT_PROFILE } from '@shared/mock-data/glasgow-dataset';
-import { formatGBP } from '@/lib/utils';
+import { ArrowRight, Building2, ExternalLink, Footprints } from 'lucide-react';
+import { uniwiseApi, type AccommodationFilters } from '@shared/api/client';
+import { gbp } from '@shared/api/profile';
+import type { AccommodationOption } from '@shared/api/types';
+import { useApi } from '@shared/api/useApi';
+import { ErrorScreen } from '@/components/errors/ErrorScreen';
+import { SkeletonCard } from '@/components/LoadingSkeleton';
+
+const TOGGLES: { key: 'ensuite' | 'accessible' | 'studio'; label: string }[] = [
+  { key: 'ensuite', label: 'Ensuite' },
+  { key: 'accessible', label: 'Accessible room' },
+  { key: 'studio', label: 'Studio' },
+];
 
 export default function AccommodationPage() {
-  const [accommodations, setAccommodations] = useState<AccommodationListing[]>([]);
-  const [profile, setProfile] = useState<StudentProfile>(DEFAULT_STUDENT_PROFILE);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedArea, setSelectedArea] = useState<string>('all');
-  const [selectedRoomType, setSelectedRoomType] = useState<string>('all');
-  const [billsIncludedOnly, setBillsIncludedOnly] = useState<boolean>(false);
-  const [sortBy, setSortBy] = useState<'true_cost' | 'base_rent' | 'commute' | 'deposit'>('true_cost');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [filters, setFilters] = useState<AccommodationFilters>({ sort: 'weekly_rent' });
+  const { data, error, loading, retry } = useApi(JSON.stringify(filters), () => uniwiseApi.accommodations(filters));
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('student_finance_profile');
-      if (saved) {
-        setProfile(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.warn('Could not read saved profile:', e);
-    }
-
-    apiClient.getAccommodations().then((res) => {
-      setAccommodations(res.data);
-      setLoading(false);
-    });
-  }, []);
-
-  const processedListings = accommodations.map((acc) => {
-    const transitCostWeekly = acc.walkingTimeMins <= 15 ? 0 : 16.5;
-    const estimatedBillsWeekly = acc.billsIncluded ? 0 : acc.estimatedBillsWeekly;
-    const trueWeeklyCost = acc.weeklyRent + estimatedBillsWeekly + transitCostWeekly;
-    const upfrontTotal = acc.deposit + acc.adminOrHoldingFee + acc.weeklyRent * 4;
-
-    return {
-      ...acc,
-      transitCostWeekly,
-      estimatedBillsWeekly,
-      trueWeeklyCost,
-      upfrontTotal,
-    };
-  });
-
-  const filteredListings = processedListings.filter((item) => {
-    if (billsIncludedOnly && !item.billsIncluded) return false;
-    if (selectedArea !== 'all' && !item.area.toLowerCase().includes(selectedArea.toLowerCase())) return false;
-    if (selectedRoomType !== 'all') {
-      if (selectedRoomType === 'ensuite' && !item.roomType.toLowerCase().includes('en-suite')) return false;
-      if (selectedRoomType === 'halls' && item.type !== 'university_halls' && item.type !== 'private_hall') return false;
-      if (selectedRoomType === 'flat' && item.type !== 'shared_flat') return false;
-    }
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        item.name.toLowerCase().includes(query) ||
-        item.area.toLowerCase().includes(query) ||
-        item.address.toLowerCase().includes(query)
-      );
-    }
-    return true;
-  });
-
-  filteredListings.sort((a, b) => {
-    if (sortBy === 'true_cost') return a.trueWeeklyCost - b.trueWeeklyCost;
-    if (sortBy === 'base_rent') return a.weeklyRent - b.weeklyRent;
-    if (sortBy === 'commute') return a.transitTimeMins - b.transitTimeMins;
-    if (sortBy === 'deposit') return a.deposit - b.deposit;
-    return 0;
-  });
+  if (error) return <ErrorScreen kind={error.kind} details={error.details} onRetry={retry} />;
 
   return (
-    <div suppressHydrationWarning className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 text-slate-800">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 bg-white border border-slate-200 px-2.5 py-0.5 rounded-full">
-                Housing Module
-              </span>
-              <span className="text-[11px] text-slate-500 font-medium">
-                • Target: {profile.university}
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Student Accommodation Comparison
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Compare headline rent against actual bills, security deposits, and commuting implications.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm transition"
-            >
-              Back to Dashboard
-            </Link>
-          </div>
-        </div>
-
-        {/* Clean Filter Controls */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
-          {/* Top row: search + sort */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search by hall name, flat or neighborhood..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-              />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Sort:
-              </span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-slate-900"
-              >
-                <option value="true_cost">Lowest True Weekly Cost (Rent+Bills+Travel)</option>
-                <option value="base_rent">Lowest Base Advertised Rent</option>
-                <option value="commute">Shortest Travel Time</option>
-                <option value="deposit">Lowest Security Deposit</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Filter Pills row */}
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">
-              Area:
-            </span>
-            {[
-              { id: 'all', label: 'All Areas' },
-              { id: 'west end', label: 'West End' },
-              { id: 'finnieston', label: 'Finnieston' },
-              { id: 'southside', label: 'Southside' },
-              { id: 'dennistoun', label: 'Dennistoun' },
-            ].map((area) => (
-              <button
-                key={area.id}
-                type="button"
-                onClick={() => setSelectedArea(area.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
-                  selectedArea === area.id
-                    ? 'bg-slate-900 text-white border-slate-900'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                {area.label}
-              </button>
-            ))}
-
-            <div className="h-4 w-px bg-slate-200 mx-1 hidden sm:block" />
-
-            <button
-              type="button"
-              onClick={() => setBillsIncludedOnly(!billsIncludedOnly)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${
-                billsIncludedOnly
-                  ? 'bg-emerald-700 text-white border-emerald-700'
-                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <Flame className="w-3.5 h-3.5" />
-              Bills Included Only
-            </button>
-          </div>
-        </div>
-
-        {/* Listings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredListings.map((acc) => (
-            <div
-              key={acc.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between card-hover-lift animate-fade-in"
-            >
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700">
-                    {acc.type === 'university_halls' && 'University Residence'}
-                    {acc.type === 'private_hall' && 'Private PBSA Hall'}
-                    {acc.type === 'shared_flat' && 'Private Shared Flat'}
-                  </span>
-                  <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                    {acc.walkingTimeMins <= 15 ? (
-                      <span className="text-emerald-700 font-bold">{acc.walkingTimeMins}m walk</span>
-                    ) : (
-                      <span>{acc.transitTimeMins}m transit</span>
-                    )}
-                  </div>
-                </div>
-
-                <h3 className="text-base font-bold text-slate-900 tracking-tight leading-snug">
-                  {acc.name}
-                </h3>
-                <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
-                  <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                  <span>{acc.address}</span>
-                </div>
-
-                {/* True Cost Breakdown Box */}
-                <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-xs font-bold text-slate-700">True All-in Cost:</span>
-                    <span className="text-xl font-black text-slate-900">
-                      {formatGBP(acc.trueWeeklyCost)}
-                      <span className="text-xs font-normal text-slate-500"> / wk</span>
-                    </span>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-200/80 space-y-1 text-xs text-slate-600">
-                    <div className="flex justify-between">
-                      <span>Advertised Rent:</span>
-                      <strong className="text-slate-800">{formatGBP(acc.weeklyRent)}/wk</strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Utility Bills (Heating & Wi-Fi):</span>
-                      {acc.billsIncluded ? (
-                        <span className="text-emerald-700 font-semibold">Included (£0)</span>
-                      ) : (
-                        <span className="text-amber-700 font-semibold">+{formatGBP(acc.estimatedBillsWeekly)}/wk</span>
-                      )}
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Transit Pass Needed:</span>
-                      {acc.transitCostWeekly === 0 ? (
-                        <span className="text-emerald-700 font-semibold">£0 (Walk to campus)</span>
-                      ) : (
-                        <span className="text-slate-800 font-semibold">+{formatGBP(acc.transitCostWeekly)}/wk</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Deposit & Lease specs */}
-                <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-600">
-                  <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Deposit</span>
-                    <span className="font-extrabold text-slate-800">{formatGBP(acc.deposit)}</span>
-                  </div>
-                  <div className="p-2 rounded-lg bg-slate-50 border border-slate-100">
-                    <span className="text-[10px] text-slate-400 block uppercase font-bold">Contract</span>
-                    <span className="font-extrabold text-slate-800">{acc.contractLengthWeeks} weeks</span>
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {acc.features.slice(0, 3).map((f, i) => (
-                    <span
-                      key={i}
-                      className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium"
-                    >
-                      {f}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Source Footer */}
-              <div className="p-3 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between text-xs">
-                <div className="text-slate-500 truncate mr-2">
-                  <span className="text-[9px] text-slate-400 block uppercase">Source</span>
-                  <span className="truncate font-medium">{acc.source}</span>
-                </div>
-
-                {acc.sourceUrl && (
-                  <a
-                    href={acc.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-bold text-slate-800 hover:text-slate-900 shrink-0"
-                  >
-                    View listing <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Council tax & energy helper */}
-        <div className="p-4 rounded-xl bg-white border border-slate-200 text-xs text-slate-600 space-y-1">
-          <strong className="text-slate-900 font-bold block">
-            Student Tip on Contracts:
-          </strong>
-          <p>
-            Private landlords in Glasgow often require 52-week leases. If you travel home for the 13 summer weeks, you are still legally bound to pay ~£1,500+ in rent. University residences usually offer 39-week academic leases which end when classes finish.
+    <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <header className="border-b border-slate-200 pb-4">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">Housing &amp; bills</h1>
+          <p className="mt-1 text-xs text-slate-500">
+            University of Glasgow residences for 2026/27, from the official fees pages. Filters use the published
+            record values; a room counts as ensuite or accessible only where the source says so.
           </p>
-        </div>
+        </header>
+
+        <section aria-label="Filters" className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-end">
+          <fieldset className="flex flex-wrap gap-2">
+            <legend className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-800">Must have</legend>
+            {TOGGLES.map((t) => (
+              <label key={t.key} className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-900 has-[:checked]:text-white">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={filters[t.key] === true}
+                  onChange={(e) => setFilters((f) => ({ ...f, [t.key]: e.target.checked ? true : undefined }))}
+                />
+                {t.label}
+              </label>
+            ))}
+          </fieldset>
+          <div className="flex-1">
+            <label htmlFor="max-rent" className="mb-2 flex justify-between text-xs font-bold uppercase tracking-wider text-slate-800">
+              Max weekly rent <span className="normal-case text-slate-900">{filters.maxWeeklyRentGbp ? gbp(filters.maxWeeklyRentGbp) : 'Any'}</span>
+            </label>
+            <input
+              id="max-rent"
+              type="range"
+              min={120}
+              max={250}
+              step={5}
+              value={filters.maxWeeklyRentGbp ?? 250}
+              onChange={(e) => setFilters((f) => ({ ...f, maxWeeklyRentGbp: Number(e.target.value) >= 250 ? undefined : Number(e.target.value) }))}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-slate-900"
+            />
+          </div>
+          <div>
+            <label htmlFor="sort" className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-800">Sort</label>
+            <select
+              id="sort"
+              value={filters.sort}
+              onChange={(e) => setFilters((f) => ({ ...f, sort: e.target.value as AccommodationFilters['sort'] }))}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-800"
+            >
+              <option value="weekly_rent">Lowest rent</option>
+              <option value="name">Residence name</option>
+            </select>
+          </div>
+        </section>
+
+        <p aria-live="polite" className="text-xs text-slate-500">
+          {loading ? 'Loading rooms…' : `${data?.total ?? 0} room types match. Availability is not published, so no room is shown as available.`}
+        </p>
+
+        {!data ? (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        ) : data.items.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-600">
+            No rooms match these filters. Try removing a requirement or raising the maximum rent.
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 ${loading ? 'opacity-60' : ''}`}>
+            {data.items.map((a) => (
+              <RoomCard key={a.id} room={a} />
+            ))}
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function yesNo(v: boolean | null | undefined) {
+  return v === null || v === undefined ? 'Not stated' : v ? 'Yes' : 'No';
+}
+
+function RoomCard({ room: a }: { room: AccommodationOption }) {
+  return (
+    <article className="card-hover-lift flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div>
+        <div className="mb-1 flex items-start justify-between gap-2">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900">{a.residence_name}</h2>
+            <p className="text-[11px] text-slate-500">{a.room_type}</p>
+          </div>
+          <Building2 className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+        </div>
+        <div className="mt-2 text-xl font-black text-slate-900">
+          {gbp(a.weekly_rent_gbp)} <span className="text-xs font-medium text-slate-400">/ week</span>
+        </div>
+        <p className="text-[11px] text-slate-500">≈ {gbp(a.monthly_rent_equivalent_gbp)} / month · {a.contract_weeks}-week contract ({gbp(a.contract_total_gbp)})</p>
+
+        <dl className="mt-3 space-y-1 border-t border-slate-100 pt-2 text-xs">
+          <Item label="Bills" value={a.bills_included ? 'Included' : 'Not included'} />
+          <Item label="Ensuite" value={yesNo(a.ensuite)} />
+          <Item label="Accessible" value={yesNo(a.accessible)} />
+          <Item label="Advance payment" value={a.advance_payment_gbp !== null && a.advance_payment_gbp !== undefined ? `${gbp(a.advance_payment_gbp)} (refund terms not stated)` : 'Not stated'} />
+          <Item label="Availability" value="Not verified" />
+        </dl>
+        {a.published_walk_to_campus && (
+          <p className="mt-2 flex items-center gap-1 text-[11px] text-slate-500">
+            <Footprints className="h-3 w-3" aria-hidden="true" /> University states: {a.published_walk_to_campus} to campus
+          </p>
+        )}
+      </div>
+      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 text-xs">
+        <a href={a.profile_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-semibold text-teal-700 hover:underline">
+          Official page <ExternalLink className="h-3 w-3" />
+        </a>
+        <Link href="/transport" className="inline-flex items-center gap-1 font-bold text-slate-900 hover:underline">
+          Commute options <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+    </article>
+  );
+}
+
+function Item({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-2">
+      <dt className="text-slate-500">{label}</dt>
+      <dd className="text-right font-semibold text-slate-800">{value}</dd>
     </div>
   );
 }

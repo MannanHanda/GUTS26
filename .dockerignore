@@ -1,0 +1,12 @@
+# Keeps the backend build context small (context = repository root).
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/node_modules
+**/.next
+.git
+frontend
+supabase
+*.pdf
+.env

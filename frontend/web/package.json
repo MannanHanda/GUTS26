@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:api": "openapi-typescript ../../docs/openapi.json -o src/shared/api/schema.ts"
   },
   "dependencies": {
     "@types/canvas-confetti": "^1.9.0",
@@ -27,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.2",
+    "openapi-typescript": "7.13.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
