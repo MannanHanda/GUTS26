@@ -17,10 +17,13 @@ from app.models.api import (
     HealthResponse,
     RecommendationRequest,
     RecommendationResponse,
+    ResearchDataset,
+    ResearchDatasetList,
     TransportOptionList,
 )
 from app.models.domain import AccommodationOption, SourceStatus, TransportMode
 from app.providers.repository import DataRepository
+from app.providers.research import LIST_NOTE, ResearchRepository
 from app.services.recommendations import (
     CampusNotFound,
     ProviderUnavailable,
@@ -43,6 +46,10 @@ def get_repo(request: Request) -> DataRepository:
 
 def get_service(repo: DataRepository = Depends(get_repo)) -> RecommendationService:
     return RecommendationService(repo)
+
+
+def get_research(request: Request) -> ResearchRepository:
+    return request.app.state.research
 
 
 @router.get("/health", response_model=HealthResponse, tags=["system"])
@@ -144,6 +151,23 @@ def benefits(repo: DataRepository = Depends(get_repo)) -> BenefitList:
         note="Potential benefits only. Eligibility depends on rules each provider applies; none is confirmed here.",
         sources=[status] if status else [],
     )
+
+
+@router.get("/research", response_model=ResearchDatasetList, tags=["research"])
+def research_datasets(research: ResearchRepository = Depends(get_research)) -> ResearchDatasetList:
+    items = research.datasets()
+    return ResearchDatasetList(items=items, total=len(items), note=LIST_NOTE)
+
+
+@router.get("/research/{dataset_id}", response_model=ResearchDataset, responses=ERROR_RESPONSES, tags=["research"])
+def research_dataset(dataset_id: str, research: ResearchRepository = Depends(get_research)) -> ResearchDataset:
+    found = research.dataset(dataset_id)
+    if found is None:
+        raise HTTPException(404, detail=_err("not_found", f"No research dataset with id {dataset_id!r}."))
+    if found.status == "unavailable":
+        message = f"Research dataset {dataset_id!r} is unavailable."
+        raise HTTPException(503, detail=_err("provider_unavailable", message))
+    return found
 
 
 @router.post(

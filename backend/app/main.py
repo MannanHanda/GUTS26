@@ -14,6 +14,7 @@ from app import __version__
 from app.api.routes import router
 from app.config import CORS_ORIGINS
 from app.providers.repository import DataRepository
+from app.providers.research import ResearchRepository
 
 log = logging.getLogger(__name__)
 
@@ -25,13 +26,14 @@ def _error_body(code: str, message: str, details: list[dict] | None = None) -> d
     return {"error": {"code": code, "message": message, "details": details or []}}
 
 
-def create_app(repo: DataRepository | None = None) -> FastAPI:
+def create_app(repo: DataRepository | None = None, research: ResearchRepository | None = None) -> FastAPI:
     app = FastAPI(
         title="Uniwise API",
         version=__version__,
         description="Deterministic accommodation and commute decision engine for students moving to Glasgow.",
     )
     app.state.repo = repo or DataRepository()
+    app.state.research = research or ResearchRepository()
     app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_methods=["GET", "POST"], allow_headers=["*"])
     app.include_router(router)
 

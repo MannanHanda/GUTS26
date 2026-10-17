@@ -448,6 +448,99 @@
         }
       }
     },
+    "/api/v1/research": {
+      "get": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Research Datasets",
+        "operationId": "research_datasets_api_v1_research_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchDatasetList"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/research/{dataset_id}": {
+      "get": {
+        "tags": [
+          "research"
+        ],
+        "summary": "Research Dataset",
+        "operationId": "research_dataset_api_v1_research__dataset_id__get",
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Dataset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchDataset"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required data source is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/recommendations/setup": {
       "post": {
         "tags": [
@@ -2020,6 +2113,131 @@
           "method"
         ],
         "title": "RecommendationResponse"
+      },
+      "ResearchDataset": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "unavailable"
+            ],
+            "title": "Status",
+            "description": "'unverified': raw research data with no verified provenance."
+          },
+          "source_file": {
+            "type": "string",
+            "title": "Source File"
+          },
+          "notes": {
+            "type": "string",
+            "title": "Notes"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "tables": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchTable"
+            },
+            "type": "array",
+            "title": "Tables"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "source_file",
+          "notes"
+        ],
+        "title": "ResearchDataset"
+      },
+      "ResearchDatasetList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ResearchDataset"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "note"
+        ],
+        "title": "ResearchDatasetList"
+      },
+      "ResearchTable": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Sheet name, or the file name for CSV files."
+          },
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Columns"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "columns",
+          "rows"
+        ],
+        "title": "ResearchTable"
       },
       "SourceStatus": {
         "properties": {

@@ -11,17 +11,10 @@ import {
   ExternalLink, 
   CheckCircle2, 
   Sparkles, 
-  Building2, 
   Stethoscope, 
-  Pill, 
-  Smile, 
-  Eye, 
   Clock, 
-  Info, 
   ArrowRight,
-  Filter,
   Search,
-  HelpCircle,
   Activity
 } from 'lucide-react';
 import { apiClient } from '@/shared/api-client';
@@ -654,7 +647,7 @@ export default function HealthcarePage() {
               <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Step 1</div>
               <div className="text-sm font-bold text-slate-900">Register with Campus GP</div>
               <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Register online at Barclay Medical Practice (Fraser Building) or your university's affiliated clinic with your student ID & Glasgow address.
+                Register online at Barclay Medical Practice (Fraser Building) or your university&apos;s affiliated clinic with your student ID & Glasgow address.
               </p>
             </div>
 

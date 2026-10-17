@@ -12,7 +12,6 @@ import {
   ArrowRight,
   Menu,
   X,
-  Compass,
   Wallet,
   HeartPulse,
 } from 'lucide-react';

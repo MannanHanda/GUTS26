@@ -75,7 +75,7 @@ Errors always arrive as `{ "error": { "code", "message", "details" } }` with cod
 - [ ] Delete the mock dataset. Still used by banking, healthcare (labelled illustrative) and onboarding.
 - [x] Dashboard, accommodation and transport use `web/src/shared/api/client.ts` (real endpoints, no mock fallback). The legacy `api-client.ts` remains only for banking and healthcare.
 - [x] TypeScript types generated from `docs/openapi.json` (`npm run generate:api` → `web/src/shared/api/schema.ts`).
-- [x] Web dashboard no longer says "AI Recommended". `mobile/App.tsx` still does.
+- [x] Web dashboard no longer says "AI Recommended". The mobile app's visible label is "Recommended package"; a code comment in `mobile/src/shared/calculations/cost-engine.ts` still says "AI Recommended".
 - [ ] Remove references to other universities (landing page, mock dataset) until the backend has data for them.
 - [x] Banking and healthcare carry an "Illustrative data" banner (route layouts) until they have sourced data.
 

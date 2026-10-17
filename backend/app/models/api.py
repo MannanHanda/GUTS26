@@ -263,6 +263,31 @@ class BenefitList(Model):
     sources: list[SourceStatus]
 
 
+class ResearchTable(Model):
+    name: str = Field(description="Sheet name, or the file name for CSV files.")
+    columns: list[str]
+    rows: list[dict[str, str | None]]
+
+
+ResearchStatus = Literal["unverified", "unavailable"]
+
+
+class ResearchDataset(Model):
+    id: str
+    title: str
+    status: ResearchStatus = Field(description="'unverified': raw research data with no verified provenance.")
+    source_file: str
+    notes: str
+    error: str | None = None
+    tables: list[ResearchTable] = Field(default_factory=list)
+
+
+class ResearchDatasetList(Model):
+    items: list[ResearchDataset]
+    total: int
+    note: str
+
+
 class TransportOptionList(Model):
     accommodation_id: str
     campus_id: str

@@ -3,38 +3,24 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  CreditCard, 
   CheckCircle2, 
   ExternalLink, 
   ShieldCheck, 
-  ArrowRight,
-  Sparkles,
-  HelpCircle,
-  AlertCircle
 } from 'lucide-react';
-import { BankAccount, StudentProfile } from '@shared/types';
+import { BankAccount } from '@shared/types';
 import { apiClient } from '@shared/api-client';
 import { DEFAULT_STUDENT_PROFILE } from '@shared/mock-data/glasgow-dataset';
 import { formatGBP } from '@/lib/utils';
+import { useSavedProfile } from '@/lib/stored-profile';
 
 export default function BankingPage() {
   const [banks, setBanks] = useState<BankAccount[]>([]);
-  const [profile, setProfile] = useState<StudentProfile>(DEFAULT_STUDENT_PROFILE);
-  const [loading, setLoading] = useState<boolean>(true);
+  const profile = useSavedProfile() ?? DEFAULT_STUDENT_PROFILE;
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('student_finance_profile');
-      if (saved) {
-        setProfile(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.warn('Could not read saved profile:', e);
-    }
 
     apiClient.getBankingOptions().then((res) => {
       setBanks(res.data);
-      setLoading(false);
     });
   }, []);
 

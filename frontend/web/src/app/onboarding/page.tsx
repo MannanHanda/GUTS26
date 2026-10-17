@@ -1,43 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Building2, 
-  CreditCard, 
-  Bus, 
-  Sliders, 
   ArrowRight, 
   ArrowLeft, 
   CheckCircle2, 
   GraduationCap, 
   MapPin, 
-  Info,
-  Wallet,
-  Sparkles
 } from 'lucide-react';
 import { StudentProfile } from '@shared/types';
 import { UNIVERSITIES, DEFAULT_STUDENT_PROFILE } from '@shared/mock-data/glasgow-dataset';
-import { formatGBP } from '@/lib/utils';
+import { useSavedProfile } from '@/lib/stored-profile';
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
   const totalSteps = 4;
 
-  const [profile, setProfile] = useState<StudentProfile>(DEFAULT_STUDENT_PROFILE);
+  // Edits made on this page take precedence over the profile saved in the browser.
+  const savedProfile = useSavedProfile();
+  const [draft, setProfile] = useState<StudentProfile | null>(null);
+  const profile = draft ?? savedProfile ?? DEFAULT_STUDENT_PROFILE;
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('student_finance_profile');
-      if (saved) {
-        setProfile(JSON.parse(saved));
-      }
-    } catch (e) {
-      console.warn('Could not read saved profile:', e);
-    }
-  }, []);
 
   const saveToStorage = (updated: StudentProfile) => {
     try {
@@ -438,12 +423,12 @@ export default function OnboardingPage() {
                     { id: 'walk', label: 'Walking', desc: 'Free & active' },
                     { id: 'cycle', label: 'Nextbike Cycling', desc: 'Free first 30 mins' },
                   ].map((item) => {
-                    const isSelected = profile.transportPreferences.includes(item.id as any);
+                    const isSelected = profile.transportPreferences.includes(item.id as StudentProfile['transportPreferences'][number]);
                     return (
                       <button
                         key={item.id}
                         type="button"
-                        onClick={() => toggleTransport(item.id as any)}
+                        onClick={() => toggleTransport(item.id as StudentProfile['transportPreferences'][number])}
                         className={`p-3 rounded-xl border text-left transition ${
                           isSelected
                             ? 'bg-slate-50 border-slate-900 ring-1 ring-slate-900'
@@ -478,7 +463,7 @@ export default function OnboardingPage() {
                         key={tradeoff.id}
                         type="button"
                         onClick={() => {
-                          const updated = { ...profile, tradeoffPreference: tradeoff.id as any };
+                          const updated = { ...profile, tradeoffPreference: tradeoff.id as StudentProfile['tradeoffPreference'] };
                           setProfile(updated);
                           saveToStorage(updated);
                         }}
@@ -518,12 +503,12 @@ export default function OnboardingPage() {
                   { id: 'low_international_fees', title: '£0 International Wire Fees', desc: 'Best for funds sent from abroad' },
                   { id: 'cashback_groceries', title: 'Dining Discounts & Perks', desc: 'Tastecard membership & cashback' },
                 ].map((item) => {
-                  const isSelected = profile.bankingPriorities.includes(item.id as any);
+                  const isSelected = profile.bankingPriorities.includes(item.id as StudentProfile['bankingPriorities'][number]);
                   return (
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => toggleBanking(item.id as any)}
+                      onClick={() => toggleBanking(item.id as StudentProfile['bankingPriorities'][number])}
                       className={`p-3 rounded-xl border text-left transition flex items-start justify-between ${
                         isSelected
                           ? 'bg-slate-50 border-slate-900 ring-1 ring-slate-900'
