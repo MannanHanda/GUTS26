@@ -1,20 +1,24 @@
 # Dependencies
 node_modules/
+**/node_modules/
 .pnp
 .pnp.*
 
 # Next.js & Web builds
 .next/
-web/.next/
+**/.next/
 out/
+**/out/
 build/
+**/build/
 dist/
+**/dist/
 
 # Expo & Mobile builds
 .expo/
-mobile/.expo/
-mobile/dist/
+**/.expo/
 web-build/
+**/web-build/
 
 # Package manager locks & logs
 *.log
@@ -26,6 +30,7 @@ yarn-error.log*
 # Environment files
 .env*.local
 .env
+**/.env*.local
 
 # System & OS
 .DS_Store

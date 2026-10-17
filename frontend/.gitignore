@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js & Web builds
+.next/
+**/.next/
+out/
+dist/
+
+# Expo & Mobile builds
+.expo/
+**/.expo/
+web-build/
+
+# Package manager locks & logs
+*.log
+
+# Environment files
+.env*.local
+.env
+
+# System & OS
+.DS_Store
+Thumbs.db
