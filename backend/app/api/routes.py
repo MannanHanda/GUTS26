@@ -31,6 +31,7 @@ router = APIRouter(prefix="/api/v1")
 ERROR_RESPONSES = {
     404: {"model": ErrorResponse, "description": "Resource not found"},
     422: {"model": ErrorResponse, "description": "Validation error"},
+    500: {"model": ErrorResponse, "description": "Unexpected server error"},
     503: {"model": ErrorResponse, "description": "A required data source is unavailable"},
 }
 

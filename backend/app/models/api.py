@@ -18,6 +18,7 @@ from app.models.domain import (
 )
 
 FactorId = Literal["monthly_cost", "commute_time", "upfront_cost", "evidence_confidence"]
+RankingConfidence = Literal["clear", "close", "single_option", "none"]
 
 
 # ----------------------------------------------------------------------------- errors
@@ -27,7 +28,7 @@ class ErrorDetail(Model):
 
 
 class ErrorBody(Model):
-    code: Literal["validation_error", "not_found", "provider_unavailable", "insufficient_data", "internal_error"]
+    code: Literal["validation_error", "not_found", "method_not_allowed", "provider_unavailable", "internal_error"]
     message: str
     details: list[ErrorDetail] = Field(default_factory=list)
 
@@ -226,12 +227,12 @@ class RecommendationResponse(Model):
     generated_at: datetime
     profile_summary: ProfileSummary
     feasibility: Literal["feasible", "no_feasible_options"]
-    ranking_confidence: Literal["clear", "close", "single_option", "none"]
+    ranking_confidence: RankingConfidence
     summary: str
     recommended_candidate_id: str | None
     ranked: list[RankedCandidate]
-    total_candidates_evaluated: int
-    total_feasible: int
+    total_candidates_evaluated: int = Field(description="Room-and-transport combinations evaluated.")
+    total_feasible: int = Field(description="Room-and-transport combinations that met every hard constraint.")
     alternatives: list[PriorityAlternative]
     excluded: list[ExcludedCandidate]
     relaxation_suggestions: list[str]

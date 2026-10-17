@@ -56,7 +56,7 @@ The single source of truth is [`../docs/openapi.json`](../docs/openapi.json), al
 | GET | `/api/v1/transport/options` | Transport page |
 | POST | `/api/v1/recommendations/setup` | Onboarding and dashboard; re-called when a preference changes |
 
-Errors always arrive as `{ "error": { "code", "message", "details" } }` with codes `validation_error` (422), `not_found` (404) and `provider_unavailable` (503).
+Errors always arrive as `{ "error": { "code", "message", "details" } }` with codes `validation_error` (422), `not_found` (404), `method_not_allowed` (405), `provider_unavailable` (503) and `internal_error` (500).
 
 ### Rules for displaying results
 

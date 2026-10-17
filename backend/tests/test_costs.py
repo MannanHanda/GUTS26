@@ -69,8 +69,11 @@ def test_subway_ticket_choice_is_cheapest_and_keeps_original_price(repo):
     assert season.monthly_equivalent_gbp == pytest.approx(55.0 * DAYS_PER_MONTH / 28, abs=0.01)
 
 
+def _payg(fares, days):
+    best, alternatives = subway_tickets(fares, days)
+    return next(t for t in [best, *alternatives] if "pay-as-you-go" in t.name)
+
+
 def test_payg_monthly_scales_with_campus_days(repo):
     fares = repo.subway_fares()
-    payg5 = next(t for t in [*subway_tickets(fares, 5)[1], subway_tickets(fares, 5)[0]] if "pay-as-you-go" in t.name)
-    payg1 = next(t for t in [*subway_tickets(fares, 1)[1], subway_tickets(fares, 1)[0]] if "pay-as-you-go" in t.name)
-    assert payg5.monthly_equivalent_gbp == pytest.approx(payg1.monthly_equivalent_gbp * 5, abs=0.02)
+    assert _payg(fares, 5).monthly_equivalent_gbp == pytest.approx(_payg(fares, 1).monthly_equivalent_gbp * 5, abs=0.02)

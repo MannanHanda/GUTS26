@@ -13,11 +13,7 @@ from app.models.domain import ConcessionScheme
 MODE_NOUN = {"walk": "walking", "cycle": "cycling", "subway": "Subway"}
 
 
-def _factor(c: Candidate, factor: str):
-    return next(f for f in c.breakdown if f.factor == factor)
-
-
-def reasons(c: Candidate, profile: StudentProfile, n_feasible: int) -> list[str]:
+def reasons(c: Candidate, profile: StudentProfile, n_rooms: int) -> list[str]:
     out: list[str] = []
     cons = profile.constraints
     m, d = c.costs.monthly_total_gbp, c.transport.duration_min
@@ -32,11 +28,11 @@ def reasons(c: Candidate, profile: StudentProfile, n_feasible: int) -> list[str]
             f"{cons.max_commute_min}-minute limit."
         )
     for f in sorted(c.breakdown, key=lambda f: -f.points):
-        if f.weight == 0 or f.missing or f.normalised is None or f.normalised < 0.75 or n_feasible < 2:
+        if f.weight == 0 or f.missing or f.normalised is None or f.normalised < 0.75 or n_rooms < 2:
             continue
         if f.factor == "monthly_cost":
             out.append(
-                f"One of the lowest monthly costs among the {n_feasible} options that meet your constraints "
+                f"One of the lowest monthly costs among the {n_rooms} room options that meet your constraints "
                 f"(£{f.raw_value:.2f})."
             )
         elif f.factor == "commute_time":

@@ -145,16 +145,14 @@ def subway_option(
         return _unavailable(residence_id, campus_id, "subway", "Subway fare or station data is unavailable.")
     origin, dest = residence_point(residence_id), campus_point(campus_id)
     n = len(stations)
+    access_legs = [src.route(origin, station_point(s.atco_code), "walk") for s in stations]
+    egress_legs = [src.route(station_point(s.atco_code), dest, "walk") for s in stations]
     best: tuple[float, int, int, RouteEstimate, RouteEstimate] | None = None
-    for i, s_from in enumerate(stations):
-        access = src.route(origin, station_point(s_from.atco_code), "walk")
+    for i, access in enumerate(access_legs):
         if access is None:
             continue
-        for j, s_to in enumerate(stations):
-            if i == j:
-                continue
-            egress = src.route(station_point(s_to.atco_code), dest, "walk")
-            if egress is None:
+        for j, egress in enumerate(egress_legs):
+            if i == j or egress is None:
                 continue
             segments = min(abs(i - j), n - abs(i - j))  # the circle runs in both directions
             total = (

@@ -17,6 +17,7 @@ from app.decision_engine.scoring import (
     Candidate,
 )
 from app.models.api import (
+    ExcludedCandidate,
     MethodNote,
     PriorityAlternative,
     ProfileSummary,
@@ -26,7 +27,7 @@ from app.models.api import (
     StudentProfile,
     TransportAlternative,
 )
-from app.models.domain import AccommodationOption, TransportOption
+from app.models.domain import TransportOption
 from app.providers.repository import DataRepository
 
 
@@ -104,23 +105,20 @@ class RecommendationService:
                 )
 
         result = run(profile, accommodations, transport_by_residence)
-        return self._response(request, result, campus.name, accommodations)
+        return self._response(request, result, campus.name)
 
     # ------------------------------------------------------------------ assembly
     def _response(
-        self,
-        request: RecommendationRequest,
-        result: EngineResult,
-        campus_name: str,
-        accommodations: list[AccommodationOption],
+        self, request: RecommendationRequest, result: EngineResult, campus_name: str
     ) -> RecommendationResponse:
         profile = request.profile
         now = datetime.now(UTC).replace(microsecond=0)
-        n_feasible = len(result.ranked) + sum(len(v) for v in result.alternatives_by_room.values())
+        n_rooms = len(result.ranked)
+        n_feasible = n_rooms + sum(len(v) for v in result.alternatives_by_room.values())
         eligibility = explain.eligibility_notes(profile, self.repo.concessions())
         top = result.ranked[0] if result.ranked else None
         ranked = [
-            self._ranked(i + 1, c, result, profile, n_feasible) for i, c in enumerate(result.ranked[: request.limit])
+            self._ranked(i + 1, c, result, profile, n_rooms) for i, c in enumerate(result.ranked[: request.limit])
         ]
 
         alternatives = [
@@ -154,7 +152,7 @@ class RecommendationService:
                 uncertainties=uncertainties,
             ),
             feasibility="feasible" if result.ranked else "no_feasible_options",
-            ranking_confidence=result.ranking_confidence,  # type: ignore[arg-type]
+            ranking_confidence=result.ranking_confidence,
             summary=explain.summary(result),
             recommended_candidate_id=top.candidate_id if top else None,
             ranked=ranked,
@@ -162,12 +160,12 @@ class RecommendationService:
             total_feasible=n_feasible,
             alternatives=alternatives,
             excluded=[
-                {
-                    "accommodation_id": e.accommodation.id,
-                    "residence_name": e.accommodation.residence_name,
-                    "room_type": e.accommodation.room_type,
-                    "violations": e.violations,
-                }
+                ExcludedCandidate(
+                    accommodation_id=e.accommodation.id,
+                    residence_name=e.accommodation.residence_name,
+                    room_type=e.accommodation.room_type,
+                    violations=e.violations,
+                )
                 for e in explain.excluded_sorted(result)
             ],
             relaxation_suggestions=explain.relaxation_suggestions(profile, result),
@@ -184,19 +182,17 @@ class RecommendationService:
         )
 
     def _ranked(
-        self, rank: int, c: Candidate, result: EngineResult, profile: StudentProfile, n_feasible: int
+        self, rank: int, c: Candidate, result: EngineResult, profile: StudentProfile, n_rooms: int
     ) -> RankedCandidate:
-        others = [o for o in result.all_combinations if o.accommodation.id == c.accommodation.id and o is not c]
-        feasible_ids = {x.candidate_id for x in result.alternatives_by_room.get(c.accommodation.id, [])}
+        # Other transport modes for the same room that also met every hard constraint.
         alt = [
             TransportAlternative(
                 mode=o.transport.mode,
                 duration_min=o.transport.duration_min,
                 monthly_cost_gbp=o.costs.monthly_total_gbp,
-                score=o.score,
+                score=round(o.score, 2),
             )
-            for o in others
-            if o.candidate_id in feasible_ids
+            for o in result.alternatives_by_room.get(c.accommodation.id, [])
         ]
         return RankedCandidate(
             rank=rank,
@@ -207,7 +203,7 @@ class RecommendationService:
             score=round(c.score, 2),
             score_breakdown=c.breakdown,
             evidence_confidence=c.evidence,
-            reasons=explain.reasons(c, profile, n_feasible),
+            reasons=explain.reasons(c, profile, n_rooms),
             compromises=explain.compromises(c, profile),
             unknowns=explain.unknowns(c),
             comparison=explain.comparison(c, result),

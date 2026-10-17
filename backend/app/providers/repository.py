@@ -63,9 +63,10 @@ class DataRepository:
         self._reference = reference_dir
         self._statuses: dict[str, SourceStatus] = {}
         self._accommodations: list[AccommodationOption] = []
+        self._accommodations_by_id: dict[str, AccommodationOption] = {}
         self._campuses: dict[str, Campus] = {}
         self._fares: SubwayFares | None = None
-        self._stations: list[SubwayStation] = []
+        self._stations: list[SubwayStation] = []  # in network order once fares are loaded
         self._concessions: list[ConcessionScheme] = []
         self._geo: dict[str, Any] | None = None
         self._geo_index: dict[str, int] = {}
@@ -79,6 +80,7 @@ class DataRepository:
             self._load_concessions,
         ):
             loader()
+        self._stations = self._stations_in_network_order()
 
     # ------------------------------------------------------------------ helpers
     def _read(self, path: Path) -> dict[str, Any]:
@@ -217,10 +219,11 @@ class DataRepository:
                             provenance=prov.model_copy(update={"source_url": res["profile_url"]}),
                         )
                     )
-            ids = [o.id for o in options]
-            if len(ids) != len(set(ids)):
+            by_id = {o.id: o for o in options}
+            if len(by_id) != len(options):
                 raise ValueError("duplicate accommodation ids")
             self._accommodations = options
+            self._accommodations_by_id = by_id
             self._statuses[st.source_id] = st
         except (OSError, ValueError, KeyError, TypeError, ValidationError) as exc:
             self._unavailable(
@@ -301,7 +304,7 @@ class DataRepository:
         return list(self._accommodations)
 
     def accommodation(self, accommodation_id: str) -> AccommodationOption | None:
-        return next((a for a in self._accommodations if a.id == accommodation_id), None)
+        return self._accommodations_by_id.get(accommodation_id)
 
     def campus(self, campus_id: str) -> Campus | None:
         return self._campuses.get(campus_id)
@@ -309,11 +312,14 @@ class DataRepository:
     def subway_fares(self) -> SubwayFares | None:
         return self._fares
 
-    def subway_stations(self) -> list[SubwayStation]:
+    def _stations_in_network_order(self) -> list[SubwayStation]:
         if not self._fares:
             return []
         by_code = {s.atco_code: s for s in self._stations}
         return [by_code[c] for c in self._fares.network_order if c in by_code]
+
+    def subway_stations(self) -> list[SubwayStation]:
+        return list(self._stations)
 
     def concessions(self) -> list[ConcessionScheme]:
         return list(self._concessions)

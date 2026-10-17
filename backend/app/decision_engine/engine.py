@@ -20,7 +20,7 @@ from app.decision_engine.scoring import (
     evidence_confidence,
     score_candidates,
 )
-from app.models.api import ConstraintViolation, FactorId, StudentProfile
+from app.models.api import ConstraintViolation, FactorId, RankingConfidence, StudentProfile
 from app.models.domain import AccommodationOption, TransportOption
 
 
@@ -40,7 +40,7 @@ class EngineResult:
     total_evaluated: int = 0
 
     @property
-    def ranking_confidence(self) -> str:
+    def ranking_confidence(self) -> RankingConfidence:
         if not self.ranked:
             return "none"
         rival = next(

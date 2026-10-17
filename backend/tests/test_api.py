@@ -129,3 +129,42 @@ def test_advance_payment_refundability_is_unknown(client):
     a = client.get("/api/v1/accommodations/cairncross-house--single").json()
     assert a["advance_payment_gbp"] == 200.0
     assert a["advance_payment_refundable"] is None
+
+
+def test_unknown_path_uses_error_envelope(client):
+    r = client.get("/api/v1/does-not-exist")
+    assert r.status_code == 404
+    assert r.json()["error"]["code"] == "not_found"
+
+
+def test_wrong_method_uses_error_envelope(client):
+    r = client.delete("/api/v1/health")
+    assert r.status_code == 405
+    assert r.json()["error"]["code"] == "method_not_allowed"
+
+
+def test_unexpected_crash_returns_500_envelope(repo):
+    from fastapi.testclient import TestClient
+
+    from app.main import create_app
+
+    class BrokenRepo:
+        def source_statuses(self):
+            raise RuntimeError("simulated failure")
+
+    app = create_app(repo)
+    app.state.repo = BrokenRepo()
+    r = TestClient(app, raise_server_exceptions=False).get("/api/v1/health")
+    assert r.status_code == 500
+    assert r.json() == {"error": {"code": "internal_error", "message": "An unexpected error occurred.", "details": []}}
+
+
+def test_room_counts_in_reasons_match_the_summary(client):
+    import re
+
+    body = client.post("/api/v1/recommendations/setup", json=_profile()).json()
+    summary_count = int(re.search(r"among (\d+) room option", body["summary"]).group(1))
+    for reason in body["ranked"][0]["reasons"]:
+        m = re.search(r"among the (\d+) room options", reason)
+        if m:
+            assert int(m.group(1)) == summary_count
