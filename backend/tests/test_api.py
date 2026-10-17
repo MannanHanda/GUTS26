@@ -168,3 +168,33 @@ def test_room_counts_in_reasons_match_the_summary(client):
         m = re.search(r"among the (\d+) room options", reason)
         if m:
             assert int(m.group(1)) == summary_count
+
+
+def test_benefits_lists_sourced_schemes_as_potential(client):
+    r = client.get("/api/v1/benefits")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] == len(body["items"]) >= 1
+    scheme = body["items"][0]
+    assert scheme["scheme_id"] == "under22-free-bus"
+    assert scheme["provenance"]["status"] == "curated"
+    assert scheme["provenance"]["source_url"].startswith("https://www.transport.gov.scot/")
+    note = body["note"].lower()
+    assert "potential" in note and "confirmed" in note  # never presented as a confirmed entitlement
+
+
+def test_benefits_unavailable_returns_503(tmp_path):
+    import shutil
+
+    from fastapi.testclient import TestClient
+
+    from app.config import CURATED_DIR, REFERENCE_DIR
+    from app.main import create_app
+    from app.providers.repository import DataRepository
+
+    curated = tmp_path / "curated"
+    shutil.copytree(CURATED_DIR, curated)
+    (curated / "concessions.json").unlink()
+    r = TestClient(create_app(DataRepository(curated_dir=curated, reference_dir=REFERENCE_DIR))).get("/api/v1/benefits")
+    assert r.status_code == 503
+    assert r.json()["error"]["code"] == "provider_unavailable"

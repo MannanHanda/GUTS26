@@ -26,6 +26,8 @@ export type ProfileSummary = Schemas['ProfileSummary'];
 // Shared records
 export type AccommodationOption = Schemas['AccommodationOption'];
 export type AccommodationList = Schemas['AccommodationList'];
+export type BenefitList = Schemas['BenefitList'];
+export type ConcessionScheme = Schemas['ConcessionScheme'];
 export type TransportOption = Schemas['TransportOption'];
 export type TransportOptionList = Schemas['TransportOptionList'];
 export type JourneyLeg = Schemas['JourneyLeg'];

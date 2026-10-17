@@ -387,6 +387,67 @@
         }
       }
     },
+    "/api/v1/benefits": {
+      "get": {
+        "tags": [
+          "benefits"
+        ],
+        "summary": "Benefits",
+        "operationId": "benefits_api_v1_benefits_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BenefitList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A required data source is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/recommendations/setup": {
       "post": {
         "tags": [
@@ -698,6 +759,96 @@
         ],
         "title": "AccommodationOption",
         "description": "One bookable room type in one residence, as published by the source."
+      },
+      "BenefitList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ConcessionScheme"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "How to read the list: schemes are potential benefits, not confirmed entitlements."
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceStatus"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "note",
+          "sources"
+        ],
+        "title": "BenefitList"
+      },
+      "ConcessionScheme": {
+        "properties": {
+          "scheme_id": {
+            "type": "string",
+            "title": "Scheme Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "modes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Modes"
+          },
+          "potential_value": {
+            "type": "string",
+            "title": "Potential Value"
+          },
+          "eligibility_summary": {
+            "type": "string",
+            "title": "Eligibility Summary"
+          },
+          "restrictions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Restrictions"
+          },
+          "apply_url": {
+            "type": "string",
+            "title": "Apply Url"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scheme_id",
+          "name",
+          "modes",
+          "potential_value",
+          "eligibility_summary",
+          "restrictions",
+          "apply_url",
+          "provenance"
+        ],
+        "title": "ConcessionScheme"
       },
       "ConstraintViolation": {
         "properties": {

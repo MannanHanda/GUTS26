@@ -9,6 +9,7 @@ import { toErrorKind, type ErrorKind } from '@/components/errors/error-catalog';
 import type {
   AccommodationList,
   AccommodationOption,
+  BenefitList,
   ErrorDetail,
   HealthResponse,
   RecommendationRequest,
@@ -104,6 +105,8 @@ export const uniwiseApi = {
   health: () => request<HealthResponse>('/api/v1/health'),
 
   sources: () => request<SourceStatus[]>('/api/v1/sources/status'),
+
+  benefits: () => request<BenefitList>('/api/v1/benefits'),
 
   accommodations: (f: AccommodationFilters = {}) =>
     request<AccommodationList>(

@@ -9,6 +9,7 @@ from pydantic import Field, field_validator, model_validator
 
 from app.models.domain import (
     AccommodationOption,
+    ConcessionScheme,
     CostBasis,
     DataStatus,
     Model,
@@ -252,6 +253,13 @@ class HealthResponse(Model):
 class AccommodationList(Model):
     items: list[AccommodationOption]
     total: int
+    sources: list[SourceStatus]
+
+
+class BenefitList(Model):
+    items: list[ConcessionScheme]
+    total: int
+    note: str = Field(description="How to read the list: schemes are potential benefits, not confirmed entitlements.")
     sources: list[SourceStatus]
 
 

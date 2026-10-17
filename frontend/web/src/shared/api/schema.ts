@@ -89,6 +89,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/benefits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Benefits */
+        get: operations["benefits_api_v1_benefits_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/recommendations/setup": {
         parameters: {
             query?: never;
@@ -203,6 +220,38 @@ export interface components {
              * @description Weekly rent normalised to an average calendar month (x 52 / 12).
              */
             readonly monthly_rent_equivalent_gbp: number;
+        };
+        /** BenefitList */
+        BenefitList: {
+            /** Items */
+            items: components["schemas"]["ConcessionScheme"][];
+            /** Total */
+            total: number;
+            /**
+             * Note
+             * @description How to read the list: schemes are potential benefits, not confirmed entitlements.
+             */
+            note: string;
+            /** Sources */
+            sources: components["schemas"]["SourceStatus"][];
+        };
+        /** ConcessionScheme */
+        ConcessionScheme: {
+            /** Scheme Id */
+            scheme_id: string;
+            /** Name */
+            name: string;
+            /** Modes */
+            modes: string[];
+            /** Potential Value */
+            potential_value: string;
+            /** Eligibility Summary */
+            eligibility_summary: string;
+            /** Restrictions */
+            restrictions: string[];
+            /** Apply Url */
+            apply_url: string;
+            provenance: components["schemas"]["Provenance"];
         };
         /** ConstraintViolation */
         ConstraintViolation: {
@@ -1024,6 +1073,62 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TransportOptionList"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description A required data source is unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    benefits_api_v1_benefits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenefitList"];
                 };
             };
             /** @description Resource not found */

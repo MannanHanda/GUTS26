@@ -12,6 +12,7 @@ from app import __version__
 from app.decision_engine.commute import build_transport_options
 from app.models.api import (
     AccommodationList,
+    BenefitList,
     ErrorResponse,
     HealthResponse,
     RecommendationRequest,
@@ -128,6 +129,20 @@ def transport_options(
         campus_days_per_week=campus_days_per_week,
         items=items,
         generated_at=datetime.now(UTC).replace(microsecond=0),
+    )
+
+
+@router.get("/benefits", response_model=BenefitList, responses=ERROR_RESPONSES, tags=["benefits"])
+def benefits(repo: DataRepository = Depends(get_repo)) -> BenefitList:
+    schemes = repo.concessions()
+    status = {s.source_id: s for s in repo.source_statuses()}.get("transport_scotland_concessions")
+    if not schemes:
+        raise HTTPException(503, detail=_err("provider_unavailable", "Benefit data is unavailable."))
+    return BenefitList(
+        items=schemes,
+        total=len(schemes),
+        note="Potential benefits only. Eligibility depends on rules each provider applies; none is confirmed here.",
+        sources=[status] if status else [],
     )
 
 
