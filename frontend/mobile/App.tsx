@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  TextInput,
 } from 'react-native';
 import { 
   DEFAULT_STUDENT_PROFILE, 
@@ -25,15 +26,63 @@ import {
   TransportOption,
   HealthcareBenefit,
   HealthcareClinic,
+  ChatMessage,
 } from './src/shared/types';
 import { apiClient } from './src/shared/api-client';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'housing' | 'transit' | 'banking' | 'healthcare'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'housing' | 'transit' | 'banking' | 'healthcare' | 'chat'>('dashboard');
+
   const [profile, setProfile] = useState<StudentProfile>(DEFAULT_STUDENT_PROFILE);
   const [combinations, setCombinations] = useState<DecisionCombination[]>([]);
   const [selectedComboId, setSelectedComboId] = useState<string>('');
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+
+  // Mobile AI Chatbot State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome',
+      sender: 'assistant',
+      text: "👋 Hi! I'm Finley, your Glasgow Student Living AI Advisor. Ask me about rent & bills, the Scottish Under-22 Free Bus Pass, free NHS prescriptions, or student bank Railcards!",
+      timestamp: 'Just now',
+      quickReplies: ['Calculate £130/wk flat', 'Free Bus Pass under 22', 'Free NHS Prescriptions'],
+    },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatTyping, setChatTyping] = useState(false);
+
+  const handleSendChat = async (textToSend?: string) => {
+    const text = (textToSend || chatInput).trim();
+    if (!text || chatTyping) return;
+
+    const userMsg: ChatMessage = {
+      id: `u-${Date.now()}`,
+      sender: 'user',
+      text,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setChatMessages((prev) => [...prev, userMsg]);
+    if (!textToSend) setChatInput('');
+    setChatTyping(true);
+
+    try {
+      const res = await apiClient.sendChatMessage(text, chatMessages, profile);
+      const botMsg: ChatMessage = {
+        id: `b-${Date.now()}`,
+        sender: 'assistant',
+        text: res.data.reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        costBreakdown: res.data.costBreakdown,
+        quickReplies: res.data.quickReplies,
+      };
+      setChatMessages((prev) => [...prev, botMsg]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setChatTyping(false);
+    }
+  };
 
   useEffect(() => {
     apiClient.getRecommendations(profile).then((res) => {
@@ -45,6 +94,7 @@ export default function App() {
   }, [profile]);
 
   const activeCombo = combinations.find((c) => c.id === selectedComboId) || combinations[0];
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -80,6 +130,7 @@ export default function App() {
           { id: 'transit', label: 'Transit' },
           { id: 'banking', label: 'Banking' },
           { id: 'healthcare', label: 'Health' },
+          { id: 'chat', label: 'AI Chat' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -91,6 +142,7 @@ export default function App() {
             </Text>
           </TouchableOpacity>
         ))}
+
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -420,7 +472,118 @@ export default function App() {
             ))}
           </View>
         )}
+
+        {/* TAB 6: AI LIVING ADVISOR CHATBOT */}
+        {activeTab === 'chat' && (
+          <View style={styles.section}>
+            {/* AI Advisor Mobile Header */}
+            <View style={styles.chatHeaderCard}>
+              <View style={styles.chatAvatar}>
+                <Text style={styles.chatAvatarText}>🤖</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.chatHeaderTitle}>Finley AI Living Advisor</Text>
+                <Text style={styles.chatHeaderSubtitle}>Glasgow University & Student Cost Copilot</Text>
+              </View>
+            </View>
+
+            {/* Quick Starters Carousel */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chatQuickRow}>
+              {['Calculate £130/wk flat', 'Free Bus Pass under 22', 'NHS Scotland perks', 'Best Bank with Railcard'].map((chip, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => handleSendChat(chip)}
+                  style={styles.chatChip}
+                >
+                  <Text style={styles.chatChipText}>{chip}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Message Feed */}
+            {chatMessages.map((msg) => (
+              <View
+                key={msg.id}
+                style={[
+                  styles.chatBubbleContainer,
+                  msg.sender === 'user' ? styles.chatBubbleUserContainer : styles.chatBubbleBotContainer,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.chatBubble,
+                    msg.sender === 'user' ? styles.chatBubbleUser : styles.chatBubbleBot,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chatText,
+                      msg.sender === 'user' ? styles.chatTextUser : styles.chatTextBot,
+                    ]}
+                  >
+                    {msg.text.replace(/### |#### |\* |\*\*/g, '')}
+                  </Text>
+
+                  {/* Cost breakdown card if present */}
+                  {msg.costBreakdown && (
+                    <View style={styles.chatCostCard}>
+                      <Text style={styles.chatCostTitle}>Calculated Living Cost</Text>
+                      <Text style={styles.chatCostWeekly}>
+                        £{msg.costBreakdown.totalWeekly.toFixed(2)}/wk
+                      </Text>
+                      <Text style={styles.chatCostSub}>
+                        Rent: £{msg.costBreakdown.rentWeekly} • Bills: £{msg.costBreakdown.billsWeekly.toFixed(0)} • Transit: £{msg.costBreakdown.transitWeekly.toFixed(0)}
+                      </Text>
+                      <Text style={styles.chatCostDeposit}>
+                        Upfront 5-wk deposit: £{msg.costBreakdown.upfrontDeposit}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Follow-up chips for last message */}
+                {msg.sender === 'assistant' && msg.quickReplies && (
+                  <View style={styles.chatRepliesRow}>
+                    {msg.quickReplies.map((r, rIdx) => (
+                      <TouchableOpacity
+                        key={rIdx}
+                        onPress={() => handleSendChat(r)}
+                        style={styles.chatReplyButton}
+                      >
+                        <Text style={styles.chatReplyText}>💬 {r}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
+
+            {chatTyping && (
+              <View style={[styles.chatBubble, styles.chatBubbleBot, { width: 120, paddingVertical: 10 }]}>
+                <Text style={styles.chatTypingText}>Thinking...</Text>
+              </View>
+            )}
+
+            {/* Input Composer */}
+            <View style={styles.chatInputRow}>
+              <TextInput
+                style={styles.chatTextInput}
+                value={chatInput}
+                onChangeText={setChatInput}
+                placeholder="Ask about rent, bus pass, or NHS..."
+                placeholderTextColor="#94A3B8"
+              />
+              <TouchableOpacity
+                onPress={() => handleSendChat()}
+                style={styles.chatSendButton}
+              >
+                <Text style={styles.chatSendText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </ScrollView>
+
 
       {/* Profile Adjust Modal */}
       <Modal visible={showProfileModal} animationType="slide" transparent>
@@ -922,4 +1085,171 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
+  chatHeaderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    borderRadius: 16,
+    padding: 14,
+    gap: 12,
+  },
+  chatAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(45, 212, 191, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(45, 212, 191, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatAvatarText: {
+    fontSize: 18,
+  },
+  chatHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  chatHeaderSubtitle: {
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  chatQuickRow: {
+    flexDirection: 'row',
+    marginVertical: 4,
+  },
+  chatChip: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+  },
+  chatChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  chatBubbleContainer: {
+    width: '100%',
+    marginVertical: 4,
+  },
+  chatBubbleUserContainer: {
+    alignItems: 'flex-end',
+  },
+  chatBubbleBotContainer: {
+    alignItems: 'flex-start',
+  },
+  chatBubble: {
+    maxWidth: '88%',
+    borderRadius: 16,
+    padding: 12,
+  },
+  chatBubbleUser: {
+    backgroundColor: '#0F172A',
+    borderBottomRightRadius: 2,
+  },
+  chatBubbleBot: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderBottomLeftRadius: 2,
+  },
+  chatText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  chatTextUser: {
+    color: '#FFFFFF',
+  },
+  chatTextBot: {
+    color: '#1E293B',
+  },
+  chatCostCard: {
+    marginTop: 8,
+    backgroundColor: '#0F172A',
+    borderRadius: 10,
+    padding: 10,
+  },
+  chatCostTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#2DD4BF',
+    textTransform: 'uppercase',
+  },
+  chatCostWeekly: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginVertical: 2,
+  },
+  chatCostSub: {
+    fontSize: 9,
+    color: '#94A3B8',
+  },
+  chatCostDeposit: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#FBBF24',
+    marginTop: 4,
+  },
+  chatRepliesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 6,
+    paddingHorizontal: 4,
+  },
+  chatReplyButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  chatReplyText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  chatTypingText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontStyle: 'italic',
+  },
+  chatInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 6,
+    paddingLeft: 12,
+  },
+  chatTextInput: {
+    flex: 1,
+    fontSize: 12,
+    color: '#0F172A',
+    paddingVertical: 4,
+  },
+  chatSendButton: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  chatSendText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2DD4BF',
+  },
 });
+
