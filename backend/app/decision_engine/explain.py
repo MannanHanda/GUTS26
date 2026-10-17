@@ -123,15 +123,11 @@ def comparison(c: Candidate, result: EngineResult) -> str | None:
         return (
             f"{prefix}: the two options are tied on every weighted factor; the order uses the deterministic tie-break."
         )
+    # A single factor can contribute more than the overall lead when another factor pulls the other way.
+    points = f"(+{gap:.1f} points on this factor; {total_gap:.1f} points apart overall)"
     if c is top:
-        return (
-            f"{prefix} mainly on {wf.label.lower()}: {_val(wf)} here vs {_val(lf)} "
-            f"({gap:.1f} of the {total_gap:.1f}-point gap)."
-        )
-    return (
-        f"{prefix} mainly on {wf.label.lower()}: {_val(lf)} here vs {_val(wf)} for the top option "
-        f"({gap:.1f} of the {total_gap:.1f}-point gap)."
-    )
+        return f"{prefix} mainly on {wf.label.lower()}: {_val(wf)} here vs {_val(lf)} {points}."
+    return f"{prefix} mainly on {wf.label.lower()}: {_val(lf)} here vs {_val(wf)} for the top option {points}."
 
 
 def _val(f) -> str:

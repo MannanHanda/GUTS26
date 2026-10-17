@@ -71,13 +71,13 @@ Errors always arrive as `{ "error": { "code", "message", "details" } }` with cod
 
 ## 🛠️ Changes still needed to match the spec
 
-- [ ] Delete the local calculation engine: `shared/calculations/cost-engine.ts` and its copies in `web/src/shared/` and `mobile/src/shared/`.
-- [ ] Delete the mock dataset: `shared/mock-data/glasgow-dataset.ts` and its copies.
-- [ ] Remove the mock fallback from `api-client.ts` and point it at the endpoints above.
-- [ ] Generate TypeScript types from `docs/openapi.json` and replace `shared/types/index.ts`.
-- [ ] Replace "AI Recommended" wording (`web/src/app/dashboard/page.tsx`, `mobile/App.tsx`) with "Recommended".
+- [x] Web: local calculation engine deleted (`web/src/shared/calculations/cost-engine.ts`). Copies in `shared/` and `mobile/src/shared/` remain for the mobile app.
+- [ ] Delete the mock dataset. Still used by banking, healthcare (labelled illustrative) and onboarding.
+- [x] Dashboard, accommodation and transport use `web/src/shared/api/client.ts` (real endpoints, no mock fallback). The legacy `api-client.ts` remains only for banking and healthcare.
+- [x] TypeScript types generated from `docs/openapi.json` (`npm run generate:api` → `web/src/shared/api/schema.ts`).
+- [x] Web dashboard no longer says "AI Recommended". `mobile/App.tsx` still does.
 - [ ] Remove references to other universities (landing page, mock dataset) until the backend has data for them.
-- [ ] Hide or clearly label the banking and healthcare pages until they have sourced data.
+- [x] Banking and healthcare carry an "Illustrative data" banner (route layouts) until they have sourced data.
 
 ---
 
