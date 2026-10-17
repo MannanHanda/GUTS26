@@ -33,7 +33,7 @@
 ## 📁 Repository structure
 
 ```
-GUTS26/
+uniwise/
 ├── backend/                  # Python FastAPI service
 │   ├── app/
 │   │   ├── api/              # HTTP routes

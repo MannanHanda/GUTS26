@@ -10,8 +10,8 @@ import {
   MapPin, 
 } from 'lucide-react';
 import { StudentProfile } from '@shared/types';
-import { UNIVERSITIES, DEFAULT_STUDENT_PROFILE } from '@shared/mock-data/glasgow-dataset';
-import { useSavedProfile } from '@/lib/stored-profile';
+import { DEFAULT_STUDENT_PROFILE, UNIVERSITIES } from '@/lib/student-profile';
+import { saveStudentProfile, useSavedProfile } from '@/lib/stored-profile';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -25,11 +25,7 @@ export default function OnboardingPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const saveToStorage = (updated: StudentProfile) => {
-    try {
-      localStorage.setItem('student_finance_profile', JSON.stringify(updated));
-    } catch (e) {
-      console.warn('Could not save profile to localStorage:', e);
-    }
+    saveStudentProfile(updated);
   };
 
   const handleNext = () => {

@@ -2,8 +2,6 @@
 // should come through here. There is deliberately no mock fallback: a failure
 // raises an ApiError that the UI renders with <ErrorScreen kind={error.kind} />.
 //
-// The older `../api-client.ts` (with mock fallbacks) remains only for pages that
-// have not been migrated yet, such as banking and healthcare.
 
 import { toErrorKind, type ErrorKind } from '@/components/errors/error-catalog';
 import type {
@@ -14,6 +12,7 @@ import type {
   HealthResponse,
   RecommendationRequest,
   RecommendationResponse,
+  ResearchDataset,
   SourceStatus,
   TransportMode,
   TransportOptionList,
@@ -107,6 +106,9 @@ export const uniwiseApi = {
   sources: () => request<SourceStatus[]>('/api/v1/sources/status'),
 
   benefits: () => request<BenefitList>('/api/v1/benefits'),
+
+  research: (datasetId: string, signal?: AbortSignal) =>
+    request<ResearchDataset>(`/api/v1/research/${encodeURIComponent(datasetId)}`, { signal }),
 
   accommodations: (f: AccommodationFilters = {}) =>
     request<AccommodationList>(

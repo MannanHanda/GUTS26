@@ -2,7 +2,6 @@ export type UniversityId =
   | 'uofg' 
   | 'strath' 
   | 'gcu' 
-  | 'edinburgh' 
   | 'manchester' 
   | 'custom';
 

@@ -36,6 +36,10 @@ export type Provenance = Schemas['Provenance'];
 export type SourceStatus = Schemas['SourceStatus'];
 export type HealthResponse = Schemas['HealthResponse'];
 
+// Raw research data (unverified; never used for recommendations)
+export type ResearchDataset = Schemas['ResearchDataset'];
+export type ResearchTable = Schemas['ResearchTable'];
+
 // Errors
 export type ErrorResponse = Schemas['ErrorResponse'];
 export type ErrorDetail = Schemas['ErrorDetail'];

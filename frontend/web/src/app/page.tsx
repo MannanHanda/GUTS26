@@ -179,7 +179,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-base font-bold text-slate-900 mb-2">Set Your Preferences</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Choose your university (e.g. Glasgow, Strathclyde) and weekly budget. Tell us your travel frequency and banking needs.
+                Choose your university and weekly budget. Tell us your travel frequency and banking needs.
               </p>
             </div>
 

@@ -1,0 +1,2 @@
+-- Optional seed file for local Supabase development (`supabase db reset`).
+-- No real user credentials are committed.

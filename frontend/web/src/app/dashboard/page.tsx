@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   AlertCircle,
   ArrowRight,
+  Bookmark,
   Building2,
   Bus,
   Check,
@@ -35,6 +37,7 @@ import type { RankedCandidate, RecommendationResponse, SourceStatus } from '@sha
 import { ErrorScreen } from '@/components/errors/ErrorScreen';
 import { CalculatingBadge, SkeletonDashboard } from '@/components/LoadingSkeleton';
 import { Toast } from '@/components/Toast';
+import { useAuth } from '@/context/AuthContext';
 
 const MODE_LABEL: Record<string, string> = { walk: 'Walking', cycle: 'Cycling', subway: 'Subway' };
 const FACTOR_COLOURS: Record<string, string> = {
@@ -58,6 +61,8 @@ type Result =
   | { key: string; error: ApiError };
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const { user, savedPlans, savePlan, removeSavedPlan } = useAuth();
   const stored = useStoredProfile();
   const [overrides, setOverrides] = useState<Partial<ProfileChoices>>({});
   const choices: ProfileChoices = { ...initialChoices(stored), ...overrides };
@@ -68,7 +73,8 @@ export default function DashboardPage() {
   const [attempt, setAttempt] = useState(0); // bumped by Try again to re-run the same request
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [savingPlan, setSavingPlan] = useState(false);
 
   // Re-run the real decision engine whenever the request changes (debounced for the slider).
   useEffect(() => {
@@ -113,6 +119,7 @@ export default function DashboardPage() {
     () => data?.ranked.find((r) => r.candidate_id === selectedId) ?? data?.ranked[0] ?? null,
     [data, selectedId],
   );
+  const isActiveSaved = Boolean(active && savedPlans.some((p) => p.candidate_id === active.candidate_id));
 
   if (!conversion.ok) {
     return (
@@ -168,9 +175,38 @@ export default function DashboardPage() {
     ].join('\n');
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
-      setToastOpen(true);
+      setToastMessage('Copied your plan to the clipboard.');
       setTimeout(() => setCopied(false), 2500);
     });
+  };
+
+  const handleToggleSavePlan = async () => {
+    if (!active) return;
+    if (!user) {
+      router.push('/auth?next=/dashboard');
+      return;
+    }
+    setSavingPlan(true);
+    try {
+      if (isActiveSaved) {
+        const { error } = await removeSavedPlan(active.candidate_id);
+        setToastMessage(error ?? `Removed ${active.accommodation.residence_name} from your saved plans.`);
+      } else {
+        const { error } = await savePlan({
+          candidate_id: active.candidate_id,
+          residence_name: active.accommodation.residence_name,
+          room_type: active.accommodation.room_type,
+          transport_mode: active.transport.mode,
+          monthly_total_gbp: active.costs.monthly_total_gbp ?? null,
+          upfront_total_gbp: active.costs.upfront_total_gbp ?? null,
+          commute_duration_min: active.transport.duration_min ?? null,
+          overall_score: active.score,
+        });
+        setToastMessage(error ?? `Saved ${active.accommodation.residence_name} to your Supabase profile.`);
+      }
+    } finally {
+      setSavingPlan(false);
+    }
   };
 
   return (
@@ -191,7 +227,22 @@ export default function DashboardPage() {
               Monthly and upfront costs for rent, bills and commuting, ranked against your priorities.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {active && (
+              <button
+                type="button"
+                disabled={savingPlan}
+                onClick={handleToggleSavePlan}
+                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold shadow-sm transition ${
+                  isActiveSaved
+                    ? 'border-teal-600 bg-teal-50 text-teal-800 hover:bg-teal-100'
+                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Bookmark className={`h-3.5 w-3.5 ${isActiveSaved ? 'fill-teal-600 text-teal-600' : 'text-slate-500'}`} />
+                {isActiveSaved ? 'Saved to Profile' : 'Save to Profile'}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleCopy}
@@ -471,7 +522,11 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        <Toast isOpen={toastOpen} message="Copied your plan to the clipboard." onClose={() => setToastOpen(false)} />
+        <Toast
+          isOpen={toastMessage !== null}
+          message={toastMessage ?? ''}
+          onClose={() => setToastMessage(null)}
+        />
       </div>
     </div>
   );

@@ -35,10 +35,16 @@ export function gbp(amount: number): string {
   return amount.toLocaleString('en-GB', { style: 'currency', currency: 'GBP' });
 }
 
+import { PROFILE_CHANGE_EVENT, saveStudentProfile } from '@/lib/stored-profile';
+
 // ---------------------------------------------------------------- stored profile
 function subscribe(onChange: () => void) {
   window.addEventListener('storage', onChange);
-  return () => window.removeEventListener('storage', onChange);
+  window.addEventListener(PROFILE_CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener('storage', onChange);
+    window.removeEventListener(PROFILE_CHANGE_EVENT, onChange);
+  };
 }
 
 function readRaw(): string | null {
@@ -63,12 +69,9 @@ export function useStoredProfile(): LegacyProfile | null {
 }
 
 export function saveProfile(profile: LegacyProfile) {
-  try {
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
-  } catch {
-    // storage unavailable: the change still applies for this visit
-  }
+  saveStudentProfile(profile);
 }
+
 
 // ---------------------------------------------------------------- conversion
 export interface ProfileChoices {

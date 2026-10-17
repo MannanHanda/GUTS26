@@ -30,13 +30,6 @@ export const UNIVERSITIES: UniversityInfo[] = [
     mainCampusPostcode: 'G4 0BA',
     transitHubs: ['Cowcaddens Subway', 'Buchanan Bus Station'],
   },
-  {
-    id: 'edinburgh',
-    name: 'University of Edinburgh',
-    city: 'Edinburgh',
-    mainCampusPostcode: 'EH8 9YL',
-    transitHubs: ['Edinburgh Waverley', 'South Bridge Bus Corridor'],
-  },
 ];
 
 export const DEFAULT_STUDENT_PROFILE: StudentProfile = {
