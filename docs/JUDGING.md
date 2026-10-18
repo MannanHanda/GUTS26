@@ -372,7 +372,7 @@ Codes: `validation_error` (422), `not_found` (404), `method_not_allowed` (405), 
 
 ## 11. Responsible use of AI
 
-**We used AI to build Uniwise, not to make its decisions.** The team wrote most of the code and made all the engineering decisions, using AI coding assistants as a tool along the way (details in the table below).
+**We used AI to build Uniwise, not to make its decisions.** AI coding assistants wrote most of the code, working to our instructions. The team made all the engineering decisions and reviewed everything that went in (details in the table below).
 
 **The running app makes no AI calls, by design.** Rankings, costs, scores, reasons, trade-offs and next steps come from deterministic code in `backend/app/decision_engine/`, and tests check them. The same profile always gives the same answer.
 
@@ -380,9 +380,9 @@ Codes: `validation_error` (422), `not_found` (404), `method_not_allowed` (405), 
 
 | Question from the brief | Our answer |
 |---|---|
-| Where was AI used? | **To build the product**, not inside it. The team wrote most of the code; AI coding assistants were used as a tool for drafting, refactoring, debugging, tests and documentation. The product calls no AI service at runtime. |
+| Where was AI used? | **To build the product**, not inside it. AI coding assistants wrote most of the code, tests and documentation, working to tasks and designs set by the team. The product calls no AI service at runtime. |
 | What decisions stayed human? | **All the engineering decisions**: the architecture and three-layer split, the API contract, choosing data sources and what to exclude, transcribing and dating every curated figure, the scoring factors and hard-limit rules, failure handling, and every product and design decision. |
-| How was output checked? | A team member reviewed every AI-suggested change before keeping it. The checks were 71 automated tests, ruff and type checks, and comparing curated figures against the official pages named in Section 6. |
+| How was output checked? | A team member reviewed every AI-written change before keeping it, and rejected or corrected it where needed. The checks were 71 automated tests, ruff and type checks, and comparing curated figures against the official pages named in Section 6. |
 | What happens if AI is unavailable or wrong? | Nothing depends on AI at runtime, so there's no AI failure path in the recommendation. If an LLM is added to Finley later, it will be grounded in the engine's structured output, checked against it, and fall back to the current rules. |
 
 > An LLM call alone is not a solution. That's why the decision is made by a testable engine, and any future language layer would only turn its structured output into prose.

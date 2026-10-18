@@ -262,7 +262,7 @@ If nothing passes, the API returns `no_feasible_options` and suggests which limi
 
 ## 🤖 Responsible AI
 
-**Where we used AI: building the app.** We used AI coding assistants as a tool during development. The team wrote most of the code. The assistants helped with drafting, refactoring, debugging, tests and documentation (the repository includes `AGENTS.md` files and [spec section 25](./PROJECT_SPEC.md) for that workflow). Every change they suggested was reviewed by a team member before it was kept, and checked with the 71 backend tests, the linter and the type checker.
+**Where we used AI: building the app.** Most of the code was written by AI coding assistants, working to our instructions. The repository includes `AGENTS.md` files and [spec section 25](./PROJECT_SPEC.md) for that workflow. The team decided what to build and how, and broke the work into tasks for the assistants. We reviewed what they produced and kept, changed or rejected it. Every change was checked with the 71 backend tests, the linter and the type checker before it was kept.
 
 **Where the running app uses AI: it doesn't.** We chose not to put a language model in the decision. Neither the backend nor the frontends call one at runtime. Recommendations, costs, scores and explanations come from deterministic code in `backend/app/decision_engine`, so the same profile always gets the same answer, and tests check it.
 
