@@ -35,6 +35,7 @@ import type { RankedCandidate, RecommendationResponse, SourceStatus } from '@sha
 import { ErrorScreen } from '@/components/errors/ErrorScreen';
 import { CalculatingBadge, SkeletonDashboard } from '@/components/LoadingSkeleton';
 import { Toast } from '@/components/Toast';
+import { DictionaryTooltip } from '@/components/DictionaryTooltip';
 
 const MODE_LABEL: Record<string, string> = { walk: 'Walking', cycle: 'Cycling', subway: 'Subway' };
 const FACTOR_COLOURS: Record<string, string> = {
@@ -217,9 +218,21 @@ export default function DashboardPage() {
                 <label htmlFor="budget" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800">
                   <Wallet className="h-4 w-4 text-slate-700" /> Monthly budget (rent + bills + commute)
                 </label>
-                <span className="text-sm font-extrabold text-slate-900">
-                  {gbp(choices.monthlyBudgetGbp)} <span className="text-xs font-normal text-slate-500">/ month</span>
-                </span>
+                <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-lg border border-slate-300 focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900">
+                  <span className="text-xs font-bold text-slate-500">£</span>
+                  <input
+                    id="manual-budget-input"
+                    type="number"
+                    min={350}
+                    max={2000}
+                    step={10}
+                    value={choices.monthlyBudgetGbp}
+                    onChange={(e) => updateChoices({ monthlyBudgetGbp: Math.max(300, Number(e.target.value)) })}
+                    className="w-20 bg-transparent text-sm font-extrabold text-slate-900 focus:outline-none text-right"
+                    aria-label="Enter exact monthly budget"
+                  />
+                  <span className="text-[11px] font-medium text-slate-500">/ mo</span>
+                </div>
               </div>
               <input
                 id="budget"
@@ -229,8 +242,36 @@ export default function DashboardPage() {
                 step={10}
                 value={choices.monthlyBudgetGbp}
                 onChange={(e) => updateChoices({ monthlyBudgetGbp: Number(e.target.value) })}
-                className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-slate-900"
+                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-slate-900"
               />
+              
+              {/* Range Markers for Strict, Average, High */}
+              <div className="mt-1.5 flex justify-between items-center text-[10px] font-bold text-slate-500 px-0.5">
+                <button
+                  type="button"
+                  onClick={() => updateChoices({ monthlyBudgetGbp: 550 })}
+                  className={`hover:text-slate-900 transition flex items-center gap-1 ${choices.monthlyBudgetGbp <= 650 ? 'text-teal-700 font-extrabold underline' : ''}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  Strict (£550/mo)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateChoices({ monthlyBudgetGbp: 850 })}
+                  className={`hover:text-slate-900 transition flex items-center gap-1 ${choices.monthlyBudgetGbp > 650 && choices.monthlyBudgetGbp <= 1000 ? 'text-teal-700 font-extrabold underline' : ''}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  Average (£850/mo)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateChoices({ monthlyBudgetGbp: 1200 })}
+                  className={`hover:text-slate-900 transition flex items-center gap-1 ${choices.monthlyBudgetGbp > 1000 ? 'text-teal-700 font-extrabold underline' : ''}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                  High (£1,200/mo)
+                </button>
+              </div>
               <p className="mt-1 text-[10px] text-slate-400">Hard limit: options above it are excluded, never quietly included.</p>
             </div>
             <div>
@@ -284,9 +325,9 @@ export default function DashboardPage() {
                 note={`${MODE_LABEL[active.transport.mode]}, one way${active.transport.duration_status === 'estimated' ? ' (estimated)' : ''}`}
               />
               <Metric
-                label="Budget margin"
+                label="Money left over"
                 value={active.costs.monthly_total_gbp !== null && active.costs.monthly_total_gbp !== undefined ? gbp(choices.monthlyBudgetGbp - active.costs.monthly_total_gbp) : '—'}
-                note="Left each month within your limit"
+                note="Money left over each month within your limit"
                 positive
               />
             </div>
@@ -554,8 +595,26 @@ function Row({ label, value, good }: { label: string; value: string; good?: bool
 }
 
 function List({ icon, title, items, tone }: { icon: React.ReactNode; title: string; items: string[]; tone: 'slate' | 'amber' }) {
+  if (tone === 'amber') {
+    return (
+      <div className="rounded-2xl border-2 border-amber-300 bg-amber-50/90 p-5 shadow-sm">
+        <div className="mb-2 flex items-center gap-2 text-base sm:text-lg font-black tracking-wide text-amber-950 uppercase">
+          {icon} <span>{title}</span>
+        </div>
+        <ul className="space-y-2 text-xs sm:text-sm font-bold text-amber-900 pl-1">
+          {items.map((i) => (
+            <li key={i} className="flex items-start gap-2 leading-snug">
+              <span className="text-amber-600 font-black mt-0.5">•</span>
+              <span>{i}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
   return (
-    <div className={`rounded-xl border p-4 text-xs ${tone === 'amber' ? 'border-amber-200 bg-amber-50/60' : 'border-slate-200 bg-slate-50'}`}>
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs">
       <div className="mb-1.5 flex items-center gap-1.5 font-bold text-slate-900">
         {icon} {title}
       </div>

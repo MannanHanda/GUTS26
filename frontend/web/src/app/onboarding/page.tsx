@@ -254,6 +254,16 @@ export default function OnboardingPage() {
                     <div className="text-[11px] text-slate-500 mt-0.5">Student Visa • £776/yr IHS Surcharge &amp; £0 FX wire focus</div>
                   </button>
                 </div>
+
+                {profile.isInternational && (
+                  <div className="mt-3.5 p-3.5 rounded-xl bg-amber-50/90 border border-amber-300 text-xs text-amber-950 flex items-start gap-2.5">
+                    <span className="text-base shrink-0">✈️</span>
+                    <div className="leading-relaxed">
+                      <strong className="font-bold text-amber-900 block mb-0.5">Mandatory Visa Requirement Expense:</strong>
+                      You must pay the <strong>£776/year Immigration Health Surcharge (IHS) + £490 Visa Fee</strong> (£3,594 upfront for a 4-year degree) to the UK Home Office before arriving.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -270,28 +280,39 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
-              {/* Quick Preset Buttons */}
+              {/* Quick Preset Buttons with Strict, Average, High Markers */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Quick Presets
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Quick Budget Tier Markers
+                  </label>
+                  <span className="text-[11px] font-semibold text-slate-500">
+                    Glasgow student benchmark
+                  </span>
+                </div>
                 <div className="grid grid-cols-4 gap-2">
-                  {[180, 220, 260, 300].map((val) => (
+                  {[
+                    { val: 160, tier: 'Strict', label: '£160/wk' },
+                    { val: 220, tier: 'Average', label: '£220/wk' },
+                    { val: 260, tier: 'Comfort', label: '£260/wk' },
+                    { val: 320, tier: 'High', label: '£320/wk' },
+                  ].map((item) => (
                     <button
-                      key={val}
+                      key={item.val}
                       type="button"
                       onClick={() => {
-                        const updated = { ...profile, totalBudget: val, budgetPeriod: 'weekly' as const };
+                        const updated = { ...profile, totalBudget: item.val, budgetPeriod: 'weekly' as const };
                         setProfile(updated);
                         saveToStorage(updated);
                       }}
-                      className={`py-2 px-2 rounded-xl text-xs font-bold border transition ${
-                        profile.totalBudget === val && profile.budgetPeriod === 'weekly'
-                          ? 'bg-slate-900 text-white border-slate-900'
+                      className={`py-2 px-2 rounded-xl text-center border transition flex flex-col items-center justify-center ${
+                        profile.totalBudget === item.val && profile.budgetPeriod === 'weekly'
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                           : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                       }`}
                     >
-                      £{val} / wk
+                      <span className="text-[10px] font-bold uppercase tracking-wider opacity-75">{item.tier}</span>
+                      <span className="text-xs font-black">{item.label}</span>
                     </button>
                   ))}
                 </div>
@@ -374,8 +395,45 @@ export default function OnboardingPage() {
                     setProfile(updated);
                     saveToStorage(updated);
                   }}
-                  className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-900"
                 />
+
+                {/* Range Markers */}
+                <div className="mt-1.5 flex justify-between items-center text-[10px] font-bold text-slate-500 px-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...profile, maxAccommodationBudget: 135 };
+                      setProfile(updated);
+                      saveToStorage(updated);
+                    }}
+                    className={`hover:text-slate-900 transition ${profile.maxAccommodationBudget <= 145 ? 'text-teal-700 font-extrabold underline' : ''}`}
+                  >
+                    Strict (£135/wk)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...profile, maxAccommodationBudget: 180 };
+                      setProfile(updated);
+                      saveToStorage(updated);
+                    }}
+                    className={`hover:text-slate-900 transition ${profile.maxAccommodationBudget > 145 && profile.maxAccommodationBudget <= 220 ? 'text-teal-700 font-extrabold underline' : ''}`}
+                  >
+                    Average (£180/wk)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const updated = { ...profile, maxAccommodationBudget: 275 };
+                      setProfile(updated);
+                      saveToStorage(updated);
+                    }}
+                    className={`hover:text-slate-900 transition ${profile.maxAccommodationBudget > 220 ? 'text-teal-700 font-extrabold underline' : ''}`}
+                  >
+                    High (£275/wk)
+                  </button>
+                </div>
               </div>
             </div>
           )}

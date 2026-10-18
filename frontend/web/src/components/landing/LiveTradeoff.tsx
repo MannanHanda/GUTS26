@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, RefreshCw } from 'lucide-react';
+import { ArrowRight, RefreshCw, AlertTriangle } from 'lucide-react';
 import { uniwiseApi } from '@shared/api/client';
 import { gbp, toRecommendationRequest, type PriorityPreset } from '@shared/api/profile';
 import type { RankedCandidate } from '@shared/api/types';
@@ -133,7 +133,17 @@ function Scenario({ top }: { top: RankedCandidate }) {
           <div className="text-[10px] text-slate-500">one way{top.transport.duration_status === 'estimated' ? ', estimated' : ''}</div>
         </div>
       </div>
-      {top.compromises[0] && <p className="mt-3 text-xs text-amber-800">Trade-off: {top.compromises[0]}</p>}
+      {top.compromises[0] && (
+        <div className="mt-4 p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300 shadow-sm">
+          <div className="text-xs sm:text-sm font-black text-amber-950 uppercase tracking-wide flex items-center gap-1.5">
+            <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0" />
+            KEY TRADE-OFF (WHAT YOU SACRIFICE)
+          </div>
+          <div className="mt-1.5 text-base sm:text-lg font-extrabold text-amber-900 leading-snug">
+            {top.compromises[0]}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

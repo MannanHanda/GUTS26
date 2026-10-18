@@ -25,10 +25,15 @@ export default function LandingPage() {
       <section className="relative overflow-hidden bg-white border-b border-slate-200/80 pt-16 pb-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
-            {/* Soft Neutral Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider mb-6">
-              <span className="w-2 h-2 rounded-full bg-teal-600" />
-              GUTS Hackathon 2026 • Student Financial Clarity
+            {/* Campus Scope & Hackathon Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-teal-600" />
+                GUTS Hackathon 2026 • Student Financial Clarity
+              </div>
+              <span className="text-xs font-bold text-teal-900 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
+                📍 Live for University of Glasgow (UofG)
+              </span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
@@ -38,6 +43,26 @@ export default function LandingPage() {
             <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
               Compare where you live, how you bank and how you travel — and understand the real cost of each choice before signing a lease.
             </p>
+
+            {/* High-Visibility Visa & Upfront Expense Highlight */}
+            <div className="mt-7 p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-300 text-left shadow-sm max-w-2xl mx-auto flex items-start gap-3.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-900 flex items-center justify-center shrink-0 mt-0.5">
+                <AlertTriangle className="w-4 h-4 text-amber-700" />
+              </div>
+              <div className="text-xs text-amber-950">
+                <div className="font-extrabold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                  Critical Upfront Expense: UK Student Visa &amp; Health Surcharge (IHS)
+                </div>
+                <p className="mt-1 leading-relaxed text-amber-900">
+                  International students must pay the <strong>£776/year Immigration Health Surcharge (IHS) + £490 Visa Application Fee</strong> upfront before arriving — adding <strong>£3,594 upfront</strong> for a 4-year Scottish degree before you pay your first month of rent.
+                </p>
+                <div className="mt-2 flex items-center gap-3 font-bold text-amber-950">
+                  <Link href="/healthcare" className="underline hover:text-amber-800">
+                    Calculate your exact visa IHS expense &rarr;
+                  </Link>
+                </div>
+              </div>
+            </div>
 
             {/* Primary Action Buttons */}
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">

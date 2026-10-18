@@ -328,7 +328,7 @@ export function ChatBotWidget() {
                           <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
                             <span className="text-[11px] font-bold text-teal-400 flex items-center gap-1">
                               <Calculator className="w-3 h-3" />
-                              Calculated True Cost
+                              What will my weekly budget look like?
                             </span>
                             <span className="text-xs font-bold text-white">
                               £{msg.costBreakdown.totalWeekly.toFixed(2)}/wk

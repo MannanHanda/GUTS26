@@ -71,7 +71,7 @@ export function generateChatbotResponse(options: ChatEngineOptions): ChatRespons
       hoursCommuteWeekly: commuteHours,
     };
 
-    let reply = `### 📊 Real Cost Breakdown for £${rentWeekly}/week (${area})\n\n`;
+    let reply = `### 📊 What will my weekly budget look like? (£${rentWeekly}/wk in ${area})\n\n`;
     reply += `Most students look only at the headline rent of **£${rentWeekly}/week**, but here is what you will actually pay:\n\n`;
     reply += `* **Advertised Rent:** £${rentWeekly}/week\n`;
     reply += `* **Estimated Bills (Gas, Electricity, Wi-Fi):** £${billsWeekly.toFixed(2)}/week ${billsWeekly === 0 ? '*(Included)*' : '*(Glasgow winter average for tenements)*'}\n`;

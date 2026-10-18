@@ -28,6 +28,8 @@ import { apiClient } from '@/shared/api-client';
 import { HealthcareBenefit, HealthcareClinic, StudentHealthcareStatus } from '@/shared/types';
 import { MOCK_HEALTHCARE_BENEFITS, MOCK_HEALTHCARE_CLINICS } from '@/shared/mock-data/glasgow-dataset';
 
+import { DictionaryTooltip } from '@/components/DictionaryTooltip';
+
 export default function HealthcarePage() {
   // Data state
   const [benefits, setBenefits] = useState<HealthcareBenefit[]>(MOCK_HEALTHCARE_BENEFITS);
@@ -83,22 +85,64 @@ export default function HealthcarePage() {
 
   return (
     <div suppressHydrationWarning className="min-h-screen bg-slate-50 text-slate-900 pb-20">
+      {/* Scope & Data Transparency Notice */}
+      <div className="bg-slate-900 text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span><strong>Scope:</strong> Configured for <strong>University of Glasgow (UofG)</strong> students &amp; Fraser Building Barclay Practice.</span>
+          </div>
+          <div className="text-[11px] text-slate-400">
+            Policy Source: Official NHS Scotland 2026/27 Regulations &amp; Home Office Visa Standards (Curated).
+          </div>
+        </div>
+      </div>
+
       {/* Hero Header */}
       <section className="bg-white border-b border-slate-200/80 pt-10 pb-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold mb-4">
-                <HeartPulse className="w-3.5 h-3.5 text-teal-600" />
-                NHS Scotland Student Health & Rights Guide
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-semibold">
+                  <HeartPulse className="w-3.5 h-3.5 text-teal-600" />
+                  NHS Scotland Student Health &amp; Rights Guide
+                </div>
+                <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                  UofG Focus
+                </span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
                 The Truth About Healthcare Costs in Glasgow
               </h1>
               <p className="mt-3 text-base text-slate-600 leading-relaxed">
                 Scotland provides massive hidden cost advantages over England — including <span className="font-semibold text-slate-900">100% free prescriptions</span> and <span className="font-semibold text-slate-900">free NHS dental treatment for under-26s</span>. 
-                International students must budget for the mandatory <span className="font-semibold text-slate-900">£776/year IHS visa surcharge</span>.
+                International students must budget for the mandatory <DictionaryTooltip termKey="ihs_surcharge"><span className="font-semibold text-slate-900">£776/year IHS visa surcharge</span></DictionaryTooltip>.
               </p>
+
+              {/* Direct Register as New Patient Action */}
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <a
+                  href="https://www.barclaymedicalpractice.co.uk/university-of-glasgow"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="btn-register-new-patient-hero"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-sm transition"
+                >
+                  <Stethoscope className="w-4 h-4" />
+                  <span>Register as New Patient (Barclay Practice)</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href="https://www.nhsinform.scot/care-support-and-rights/nhs-services/doctors/registering-with-a-gp-practice"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition"
+                >
+                  <span>NHS Inform GP Finder</span>
+                  <ExternalLink className="w-3 h-3 text-slate-400" />
+                </a>
+              </div>
             </div>
 
             {/* Quick Metrics Badge */}
@@ -111,7 +155,7 @@ export default function HealthcarePage() {
               <div className="p-4 rounded-xl bg-emerald-50 text-emerald-950 border border-emerald-200/80">
                 <div className="text-xs text-emerald-800 font-medium uppercase tracking-wider">NHS Dental (Under 26)</div>
                 <div className="text-2xl font-bold text-emerald-700 mt-1">100% Free</div>
-                <div className="text-[11px] text-emerald-700 mt-1">Free checkups, X-rays & cleanings</div>
+                <div className="text-[11px] text-emerald-700 mt-1">Free checkups, X-rays &amp; cleanings</div>
               </div>
             </div>
           </div>
@@ -259,7 +303,7 @@ export default function HealthcarePage() {
                           courseYears === yr ? 'bg-amber-800 text-white border-amber-800' : 'bg-white text-amber-900 border-amber-200'
                         }`}
                       >
-                        {yr} {yr === 1 ? 'Yr (MSc)' : yr === 4 ? '4 Yrs (Hons)' : `${yr} Yrs`}
+                        {yr === 1 ? '1 Yr (MSc)' : yr === 4 ? '4 Yrs (Hons)' : `${yr} Yrs`}
                       </button>
                     ))}
                   </div>
@@ -650,12 +694,28 @@ export default function HealthcarePage() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Step 1</div>
-              <div className="text-sm font-bold text-slate-900">Register with Campus GP</div>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Register online at Barclay Medical Practice (Fraser Building) or your university's affiliated clinic with your student ID & Glasgow address.
-              </p>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Step 1</div>
+                <div className="text-sm font-bold text-slate-900">Register with Campus GP</div>
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                  Register online with your Glasgow student address and student ID.
+                </p>
+              </div>
+              <div className="mt-3 pt-2 border-t border-slate-200/60 space-y-1">
+                <a
+                  href="https://www.barclaymedicalpractice.co.uk/university-of-glasgow"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline"
+                >
+                  <span>Register as New Patient (Barclay)</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <div className="text-[10px] text-slate-500">
+                  UofG Fraser Building, Level 2
+                </div>
+              </div>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
@@ -674,12 +734,29 @@ export default function HealthcarePage() {
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Step 4</div>
-              <div className="text-sm font-bold text-slate-900">Apply for HC2 Low Income</div>
-              <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                Low-income students can submit form HC1 to receive an HC2 certificate, providing optical vouchers for glasses and travel refunds to NHS appointments.
-              </p>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+              <div>
+                <div className="text-xs font-bold text-teal-700 uppercase tracking-wider mb-1">Step 4 • Optical &amp; Help</div>
+                <div className="text-sm font-bold text-slate-900">Eye Exams vs Glasses &amp; HC2</div>
+                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                  NHS eye exams are <strong>100% free</strong> for all students, but <strong>glasses frames and lenses are NOT free</strong>.
+                </p>
+                <div className="mt-2 text-[11px] text-slate-700 bg-white p-2 rounded-lg border border-slate-200 space-y-1">
+                  <div>• <strong>Under 19:</strong> Get an NHS Optical Voucher automatically if in full-time education.</div>
+                  <div>• <strong>19 and older (+19):</strong> Can apply for NHS Optical Vouchers through low income by submitting an <strong>HC1 form</strong> for an <strong>HC2 certificate</strong>.</div>
+                </div>
+              </div>
+              <div className="mt-3 pt-2 border-t border-slate-200/60">
+                <a
+                  href="https://www.nhsbsa.nhs.uk/nhs-low-income-scheme"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline"
+                >
+                  <span>Apply for HC1 Low Income Certificate</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
           </div>
 
