@@ -372,7 +372,9 @@ Codes: `validation_error` (422), `not_found` (404), `method_not_allowed` (405), 
 
 ## 11. Responsible use of AI
 
-**The recommendation uses no AI.** Rankings, costs, scores, reasons, trade-offs and next steps come from deterministic code in `backend/app/decision_engine/`, and tests check them. The same profile always gives the same answer.
+**We used AI to build Uniwise, not to make its decisions.** The team wrote most of the code and made all the engineering decisions, using AI coding assistants as a tool along the way (details in the table below).
+
+**The running app makes no AI calls, by design.** Rankings, costs, scores, reasons, trade-offs and next steps come from deterministic code in `backend/app/decision_engine/`, and tests check them. The same profile always gives the same answer.
 
 **"Finley", the chat assistant, is rule-based, not a language model.** It matches keywords in the question (rent figures, area names, "bus", "NHS", "bank" and so on) and fills in pre-written answers (`frontend/web/src/shared/calculations/chat-engine.ts`). Its cost figures (for example estimated bills of £28.50 a week, or a 5-week deposit) are **illustrative general guidance**. They don't come from the decision engine and **don't affect any recommendation**. The chat client tries a `/api/v1/chat` endpoint first; the backend doesn't implement one, so the local rules always answer.
 

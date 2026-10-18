@@ -262,11 +262,11 @@ If nothing passes, the API returns `no_feasible_options` and suggests which limi
 
 ## 🤖 Responsible AI
 
-**Where AI is used in the product: nowhere.** Neither the backend nor the frontends call a language model or any other AI service. Recommendations, costs, scores and explanations come from deterministic code in `backend/app/decision_engine`, and tests check them.
+**Where we used AI: building the app.** We used AI coding assistants as a tool during development. The team wrote most of the code. The assistants helped with drafting, refactoring, debugging, tests and documentation (the repository includes `AGENTS.md` files and [spec section 25](./PROJECT_SPEC.md) for that workflow). Every change they suggested was reviewed by a team member before it was kept, and checked with the 71 backend tests, the linter and the type checker.
+
+**Where the running app uses AI: it doesn't.** We chose not to put a language model in the decision. Neither the backend nor the frontends call one at runtime. Recommendations, costs, scores and explanations come from deterministic code in `backend/app/decision_engine`, so the same profile always gets the same answer, and tests check it.
 
 **About "Finley".** The chat assistant is labelled "AI Advisor" in the interface, but it's rule-based. It matches keywords in the question and fills in pre-written answers (`frontend/web/src/shared/calculations/chat-engine.ts`). Its figures, such as estimated bills or a 5-week deposit, are illustrative general guidance. They don't come from the decision engine and don't affect any recommendation. The client tries a `/api/v1/chat` endpoint first; the backend doesn't implement one, so the local rules always answer.
-
-**Where AI was used to build it.** We used AI coding assistants as a tool during development. The team wrote most of the code. The assistants helped with drafting, refactoring, debugging, tests and documentation (the repository includes `AGENTS.md` files and [spec section 25](./PROJECT_SPEC.md) for that workflow). Every change they suggested was reviewed by a team member before it was kept, and checked with the 71 backend tests, the linter and the type checker.
 
 **What stayed human.** All the engineering decisions: the architecture and its three-layer split, the API contract, choosing the data sources and what to exclude, transcribing and dating the curated figures, the scoring factors, weights and hard-limit rules, how failures are handled, and every product and design decision.
 
