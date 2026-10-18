@@ -389,18 +389,22 @@ export const MOCK_HEALTHCARE_BENEFITS: HealthcareBenefit[] = [
   },
   {
     id: 'benefit-eye-exams',
-    title: 'Free NHS Scotland Eye Examinations',
+    title: 'Free NHS Eye Exams (Glasses Not Free Automatically)',
     category: 'optical',
-    headline: 'Free Comprehensive Eye Examinations at Any High Street Optician',
+    headline: '100% Free Eye Examinations Across Scotland — Frames & Lenses Require Vouchers',
     description:
-      'Unlike England where adults pay £25-£40 for an eye test, NHS Scotland funds standard and extended digital optical exams for all residents every 2 years (or annually if recommended).',
+      'Standard NHS eye examinations are 100% free for all students in Scotland at any high-street optician (saving £35 vs England). However, glasses frames and prescription lenses are NOT free automatically. Students under 19 in full-time education automatically receive an NHS Optical Voucher. Students aged 19 and older (+19) can apply for NHS Optical Vouchers through the NHS Low Income Scheme using form HC1 to receive an HC2 certificate.',
     costInScotland: 0,
     costInEnglandOrPrivate: 35.0,
     estimatedAnnualSaving: 35.0,
-    eligibilityCriteria: 'All UK and international students residing in Scotland.',
+    eligibilityCriteria: 'Free eye tests for all students. Optical vouchers for glasses: automatic for under-19s; via HC2 certificate for 19+ students.',
     actionRequired:
-      'Book an eye examination with any local optometrist (e.g. Specsavers on Byres Road or Boots Buchanan Galleries) mentioning NHS Scotland.',
-    badge: '100% Free',
+      'Book your free eye test at any optician (e.g. Specsavers on Byres Road). If you need glasses: under-19s bring student ID; 19+ students submit an HC1 form for low-income help.',
+    badge: 'Free Exam / Voucher Rule',
+    links: [
+      { label: 'NHS Inform Eye Care & Optical Vouchers', url: 'https://www.nhsinform.scot/care-support-and-rights/nhs-services/dental-and-eye-care/eye-examinations/' },
+      { label: 'NHS Low Income Scheme (Form HC1)', url: 'https://www.nhsbsa.nhs.uk/nhs-low-income-scheme' },
+    ],
   },
   {
     id: 'benefit-ihs-visa',

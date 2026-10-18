@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  TextInput,
+  Linking,
 } from 'react-native';
 import { 
   DEFAULT_STUDENT_PROFILE, 
@@ -25,15 +27,85 @@ import {
   TransportOption,
   HealthcareBenefit,
   HealthcareClinic,
+  ChatMessage,
 } from './src/shared/types';
 import { apiClient } from './src/shared/api-client';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'housing' | 'transit' | 'banking' | 'healthcare'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'housing' | 'transit' | 'banking' | 'healthcare' | 'chat'>('dashboard');
+
   const [profile, setProfile] = useState<StudentProfile>(DEFAULT_STUDENT_PROFILE);
   const [combinations, setCombinations] = useState<DecisionCombination[]>([]);
   const [selectedComboId, setSelectedComboId] = useState<string>('');
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+  const [customBudgetInput, setCustomBudgetInput] = useState<string>('');
+
+  // Backend Link State
+  const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
+  const [accommodations, setAccommodations] = useState<AccommodationListing[]>(MOCK_ACCOMMODATIONS);
+
+  // Mobile AI Chatbot State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome',
+      sender: 'assistant',
+      text: "👋 Hi! I'm Finley, your Glasgow Student Living AI Advisor. Ask me about rent & bills, the Scottish Under-22 Free Bus Pass, free NHS prescriptions, or student bank Railcards!",
+      timestamp: 'Just now',
+      quickReplies: ['Calculate £130/wk flat', 'Free Bus Pass under 22', 'Free NHS Prescriptions'],
+    },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatTyping, setChatTyping] = useState(false);
+
+  // Link to live backend & accommodations on mount
+  useEffect(() => {
+    apiClient.getHealth()
+      .then((res) => {
+        setBackendConnected(res.success && res.data?.status === 'healthy');
+      })
+      .catch(() => setBackendConnected(false));
+
+    apiClient.getAccommodations()
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          setAccommodations(res.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSendChat = async (textToSend?: string) => {
+    const text = (textToSend || chatInput).trim();
+    if (!text || chatTyping) return;
+
+    const userMsg: ChatMessage = {
+      id: `u-${Date.now()}`,
+      sender: 'user',
+      text,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setChatMessages((prev) => [...prev, userMsg]);
+    if (!textToSend) setChatInput('');
+    setChatTyping(true);
+
+    try {
+      const res = await apiClient.sendChatMessage(text, chatMessages, profile);
+      const botMsg: ChatMessage = {
+        id: `b-${Date.now()}`,
+        sender: 'assistant',
+        text: res.data.reply,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        costBreakdown: res.data.costBreakdown,
+        quickReplies: res.data.quickReplies,
+      };
+      setChatMessages((prev) => [...prev, botMsg]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setChatTyping(false);
+    }
+  };
 
   useEffect(() => {
     apiClient.getRecommendations(profile).then((res) => {
@@ -46,9 +118,33 @@ export default function App() {
 
   const activeCombo = combinations.find((c) => c.id === selectedComboId) || combinations[0];
 
+  const handleSetCustomBudget = () => {
+    const val = parseInt(customBudgetInput, 10);
+    if (!isNaN(val) && val >= 50 && val <= 1000) {
+      setProfile({ ...profile, totalBudget: val });
+      setCustomBudgetInput('');
+      setShowProfileModal(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
+
+      {/* Backend & Scope Transparency Banner */}
+      <View style={styles.statusBarNotice}>
+        <View style={styles.statusBarBadgeRow}>
+          <View style={[styles.statusDot, backendConnected ? styles.statusDotGreen : styles.statusDotAmber]} />
+          <Text style={styles.statusNoticeText}>
+            {backendConnected === null
+              ? 'Checking backend...'
+              : backendConnected
+              ? 'Backend Live (FastAPI :8000)'
+              : 'Local Mode (FastAPI fallback)'}
+          </Text>
+        </View>
+        <Text style={styles.statusScopeText}>UofG Focus • 2026/27 Curated Data</Text>
+      </View>
 
       {/* Mobile Top Navigation Header */}
       <View style={styles.header}>
@@ -80,6 +176,7 @@ export default function App() {
           { id: 'transit', label: 'Transit' },
           { id: 'banking', label: 'Banking' },
           { id: 'healthcare', label: 'Health' },
+          { id: 'chat', label: 'AI Chat' },
         ].map((tab) => (
           <TouchableOpacity
             key={tab.id}
@@ -91,6 +188,7 @@ export default function App() {
             </Text>
           </TouchableOpacity>
         ))}
+
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
@@ -125,7 +223,7 @@ export default function App() {
               <View style={styles.marginPill}>
                 <Text style={styles.marginText}>
                   {activeCombo.costSummary.isUnderBudget
-                    ? `✓ £${Math.round(activeCombo.costSummary.budgetDifferenceWeekly)}/wk under your target budget`
+                    ? `✓ £${Math.round(activeCombo.costSummary.budgetDifferenceWeekly)}/wk money left over`
                     : `⚠️ £${Math.round(Math.abs(activeCombo.costSummary.budgetDifferenceWeekly))}/wk over target budget`}
                 </Text>
               </View>
@@ -179,8 +277,10 @@ export default function App() {
                 </View>
               </View>
 
-              {/* Trade-offs */}
-              <Text style={styles.tradeoffHeading}>WHAT YOU GIVE UP (TRADE-OFFS)</Text>
+              {/* Trade-offs in large prominent text */}
+              <View style={styles.tradeoffHeadingContainer}>
+                <Text style={styles.tradeoffHeading}>KEY TRADE-OFF (WHAT YOU SACRIFICE)</Text>
+              </View>
               {activeCombo.tradeoffs.slice(0, 2).map((t, idx) => (
                 <View key={idx} style={styles.tradeoffBox}>
                   <Text style={styles.tradeoffTitle}>{t.title}</Text>
@@ -220,7 +320,12 @@ export default function App() {
         {activeTab === 'housing' && (
           <View style={styles.section}>
             <Text style={styles.sectionHeading}>GLASGOW STUDENT HOUSING</Text>
-            {MOCK_ACCOMMODATIONS.map((item) => {
+            <View style={styles.scopeNoticeBox}>
+              <Text style={styles.scopeNoticeText}>
+                📍 Halls and flats currently optimized for University of Glasgow (UofG) campus. Data curated from official 2026/27 providers.
+              </Text>
+            </View>
+            {accommodations.map((item) => {
               const transitCost = item.walkingTimeMins <= 15 ? 0 : 16.5;
               const bills = item.billsIncluded ? 0 : item.estimatedBillsWeekly;
               const trueCost = item.weeklyRent + bills + transitCost;
@@ -306,19 +411,35 @@ export default function App() {
         {activeTab === 'banking' && (
           <View style={styles.section}>
             <Text style={styles.sectionHeading}>STUDENT BANK ACCOUNTS</Text>
+
+            {/* What is a Student Specialist Explainer */}
+            <View style={styles.specialistCard}>
+              <Text style={styles.specialistLabel}>BANKING ADVISOR GUIDE</Text>
+              <Text style={styles.specialistTitle}>What is a Student Specialist?</Text>
+              <Text style={styles.specialistText}>
+                Student Specialists are dedicated bank branch advisors (found along Byres Rd & Glasgow City Centre) specially trained to help domestic and international students. They can set up fee-free student accounts without prior UK credit history, configure 0% interest overdraft buffers, verify university acceptance letters, and setup international money transfers.
+              </Text>
+            </View>
+
+            <View style={styles.scopeNoticeBox}>
+              <Text style={styles.scopeNoticeText}>
+                💳 Bank terms curated from official 2026/27 student packages (Byres Rd & Glasgow City Centre branches).
+              </Text>
+            </View>
+
             {MOCK_BANK_ACCOUNTS.map((b) => (
               <View key={b.id} style={styles.listingCard}>
                 <View style={styles.listingHeader}>
                   <Text style={styles.listingType}>{b.bankName}</Text>
-                  <Text style={styles.bankValue}>+£{b.estimatedYearlyValue}/yr value</Text>
+                  <Text style={styles.bankValueLarge}>+£{b.estimatedYearlyValue}/yr value</Text>
                 </View>
 
-                <Text style={styles.listingTitle}>{b.accountName}</Text>
+                <Text style={styles.listingTitleLarge}>{b.accountName}</Text>
 
                 <View style={styles.costBox}>
                   <View style={styles.costRow}>
-                    <Text style={styles.costLabel}>Year 1 0% Overdraft:</Text>
-                    <Text style={styles.trueCostValue}>£{b.overdraftLimitYear1}</Text>
+                    <Text style={styles.costLabelLarge}>Year 1 0% Overdraft:</Text>
+                    <Text style={styles.trueCostValueLarge}>£{b.overdraftLimitYear1}</Text>
                   </View>
                   <View style={styles.costRow}>
                     <Text style={styles.costSub}>Intl Transfer Fee:</Text>
@@ -329,9 +450,9 @@ export default function App() {
                 </View>
 
                 <View style={{ marginTop: 8 }}>
-                  <Text style={styles.perkTitle}>Key Features:</Text>
+                  <Text style={styles.perkTitleLarge}>Key Account Perks &amp; Incentives:</Text>
                   {b.perks.map((p, idx) => (
-                    <Text key={idx} style={styles.perkItem}>• {p}</Text>
+                    <Text key={idx} style={styles.perkItemLarge}>• {p}</Text>
                   ))}
                 </View>
 
@@ -350,7 +471,7 @@ export default function App() {
             <View style={styles.metricCardPrimary}>
               <Text style={styles.metricLabel}>SCOTLAND LIVING ADVANTAGE</Text>
               <Text style={styles.metricValueLarge}>£0 Prescriptions</Text>
-              <Text style={{ color: '#5EEAD4', fontSize: 12, marginTop: 4, fontWeight: '700' }}>
+              <Text style={{ color: '#5EEAD4', fontSize: 13, marginTop: 4, fontWeight: '700' }}>
                 100% Free NHS Prescriptions &amp; Dental under 26
               </Text>
               <Text style={{ color: '#94A3B8', fontSize: 11, marginTop: 6, lineHeight: 16 }}>
@@ -367,6 +488,65 @@ export default function App() {
                   </Text>
                 </View>
               )}
+            </View>
+
+            {/* GP Registration Action Box */}
+            <View style={styles.registerCard}>
+              <Text style={styles.registerBadge}>ACTION REQUIRED</Text>
+              <Text style={styles.registerTitle}>Register as a New Patient</Text>
+              <Text style={styles.registerDesc}>
+                Register with a Glasgow GP within your first 2 weeks. The official campus GP is Barclay Medical Practice at Fraser Building.
+              </Text>
+              <View style={styles.registerBtnRow}>
+                <TouchableOpacity
+                  style={styles.registerPrimaryBtn}
+                  onPress={() => Linking.openURL('https://www.barclaymedicalpractice.co.uk')}
+                >
+                  <Text style={styles.registerPrimaryBtnText}>Register with Barclay Practice ↗</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.registerSecondaryBtn}
+                  onPress={() => Linking.openURL('https://www.nhsinform.scot/scotlands-service-directory/gp-practices')}
+                >
+                  <Text style={styles.registerSecondaryBtnText}>NHS Inform GP Search ↗</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Eye Examination & Glasses Voucher Policy Card */}
+            <View style={styles.opticalCard}>
+              <Text style={styles.opticalBadge}>OPTICAL POLICY</Text>
+              <Text style={styles.opticalTitle}>NHS Eye Exams vs Glasses &amp; Optical Vouchers</Text>
+              <View style={styles.opticalRule}>
+                <Text style={styles.opticalRuleHead}>👁️ Eye Examination:</Text>
+                <Text style={styles.opticalRuleBody}>
+                  100% FREE for all residents and students in Scotland (saves £25–£40 vs England).
+                </Text>
+              </View>
+              <View style={styles.opticalRule}>
+                <Text style={styles.opticalRuleHead}>👓 Glasses &amp; Lenses:</Text>
+                <Text style={styles.opticalRuleBody}>
+                  Frames and lenses are NOT automatically free. You must pay unless you hold an NHS Optical Voucher.
+                </Text>
+              </View>
+              <View style={styles.opticalRule}>
+                <Text style={styles.opticalRuleHead}>🎓 Under 19 (in full-time education):</Text>
+                <Text style={styles.opticalRuleBody}>
+                  Automatically qualify for an NHS Optical Voucher to cover or discount glasses!
+                </Text>
+              </View>
+              <View style={styles.opticalRule}>
+                <Text style={styles.opticalRuleHead}>📋 Aged 19+ (+19 Students):</Text>
+                <Text style={styles.opticalRuleBody}>
+                  Can apply for NHS Optical Vouchers through the NHS Low Income Scheme (Form HC1 to receive an HC2/HC3 Certificate).
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.scopeNoticeBox}>
+              <Text style={styles.scopeNoticeText}>
+                🏥 Healthcare rules curated from official NHS Scotland 2026/27 guidelines.
+              </Text>
             </View>
 
             {/* Healthcare Entitlements Cards */}
@@ -420,6 +600,116 @@ export default function App() {
             ))}
           </View>
         )}
+
+        {/* TAB 6: AI LIVING ADVISOR CHATBOT */}
+        {activeTab === 'chat' && (
+          <View style={styles.section}>
+            {/* AI Advisor Mobile Header */}
+            <View style={styles.chatHeaderCard}>
+              <View style={styles.chatAvatar}>
+                <Text style={styles.chatAvatarText}>🤖</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.chatHeaderTitle}>Finley AI Living Advisor</Text>
+                <Text style={styles.chatHeaderSubtitle}>Glasgow University & Student Cost Copilot</Text>
+              </View>
+            </View>
+
+            {/* Quick Starters Carousel */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chatQuickRow}>
+              {['Calculate £130/wk flat', 'Free Bus Pass under 22', 'NHS Scotland perks', 'Best Bank with Railcard'].map((chip, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => handleSendChat(chip)}
+                  style={styles.chatChip}
+                >
+                  <Text style={styles.chatChipText}>{chip}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Message Feed */}
+            {chatMessages.map((msg) => (
+              <View
+                key={msg.id}
+                style={[
+                  styles.chatBubbleContainer,
+                  msg.sender === 'user' ? styles.chatBubbleUserContainer : styles.chatBubbleBotContainer,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.chatBubble,
+                    msg.sender === 'user' ? styles.chatBubbleUser : styles.chatBubbleBot,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chatText,
+                      msg.sender === 'user' ? styles.chatTextUser : styles.chatTextBot,
+                    ]}
+                  >
+                    {msg.text.replace(/### |#### |\* |\*\*/g, '')}
+                  </Text>
+
+                  {/* Cost breakdown card if present */}
+                  {msg.costBreakdown && (
+                    <View style={styles.chatCostCard}>
+                      <Text style={styles.chatCostTitle}>What will my weekly budget look like?</Text>
+                      <Text style={styles.chatCostWeekly}>
+                        £{msg.costBreakdown.totalWeekly.toFixed(2)}/wk
+                      </Text>
+                      <Text style={styles.chatCostSub}>
+                        Rent: £{msg.costBreakdown.rentWeekly} • Bills: £{msg.costBreakdown.billsWeekly.toFixed(0)} • Transit: £{msg.costBreakdown.transitWeekly.toFixed(0)}
+                      </Text>
+                      <Text style={styles.chatCostDeposit}>
+                        Upfront 5-wk deposit: £{msg.costBreakdown.upfrontDeposit}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
+                {/* Follow-up chips for last message */}
+                {msg.sender === 'assistant' && msg.quickReplies && (
+                  <View style={styles.chatRepliesRow}>
+                    {msg.quickReplies.map((r, rIdx) => (
+                      <TouchableOpacity
+                        key={rIdx}
+                        onPress={() => handleSendChat(r)}
+                        style={styles.chatReplyButton}
+                      >
+                        <Text style={styles.chatReplyText}>💬 {r}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
+
+            {chatTyping && (
+              <View style={[styles.chatBubble, styles.chatBubbleBot, { width: 120, paddingVertical: 10 }]}>
+                <Text style={styles.chatTypingText}>Thinking...</Text>
+              </View>
+            )}
+
+            {/* Input Composer */}
+            <View style={styles.chatInputRow}>
+              <TextInput
+                style={styles.chatTextInput}
+                value={chatInput}
+                onChangeText={setChatInput}
+                placeholder="Ask about rent, bus pass, or NHS..."
+                placeholderTextColor="#94A3B8"
+              />
+              <TouchableOpacity
+                onPress={() => handleSendChat()}
+                style={styles.chatSendButton}
+              >
+                <Text style={styles.chatSendText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Profile Adjust Modal */}
@@ -429,23 +719,56 @@ export default function App() {
             <Text style={styles.modalTitle}>Quick Budget Settings</Text>
             <Text style={styles.modalSubtitle}>Adjust your weekly budget allowance</Text>
 
-            <View style={styles.budgetSelector}>
-              {[180, 220, 260, 300].map((amt) => (
+            {/* Manual Budget Amount Input */}
+            <View style={styles.manualInputContainer}>
+              <Text style={styles.manualInputLabel}>Manual Budget Amount (£/week)</Text>
+              <View style={styles.manualInputRow}>
+                <TextInput
+                  style={styles.manualInputField}
+                  placeholder="e.g. 215"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="numeric"
+                  value={customBudgetInput}
+                  onChangeText={setCustomBudgetInput}
+                />
                 <TouchableOpacity
-                  key={amt}
-                  onPress={() => setProfile({ ...profile, totalBudget: amt })}
+                  style={styles.manualInputSaveBtn}
+                  onPress={handleSetCustomBudget}
+                >
+                  <Text style={styles.manualInputSaveText}>Set Budget</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Quick Markers: Strict, Average, High */}
+            <Text style={styles.presetLabel}>Budget Markers (Strict / Average / High):</Text>
+            <View style={styles.budgetSelector}>
+              {[
+                { label: 'Strict', amt: 180 },
+                { label: 'Average', amt: 220 },
+                { label: 'High', amt: 300 },
+              ].map((preset) => (
+                <TouchableOpacity
+                  key={preset.amt}
+                  onPress={() => {
+                    setProfile({ ...profile, totalBudget: preset.amt });
+                    setShowProfileModal(false);
+                  }}
                   style={[
                     styles.budgetButton,
-                    profile.totalBudget === amt && styles.budgetButtonActive,
+                    profile.totalBudget === preset.amt && styles.budgetButtonActive,
                   ]}
                 >
+                  <Text style={[styles.budgetMarkerTag, profile.totalBudget === preset.amt && styles.budgetMarkerTagActive]}>
+                    {preset.label}
+                  </Text>
                   <Text
                     style={[
                       styles.budgetButtonText,
-                      profile.totalBudget === amt && styles.budgetButtonTextActive,
+                      profile.totalBudget === preset.amt && styles.budgetButtonTextActive,
                     ]}
                   >
-                    £{amt}/wk
+                    £{preset.amt}/wk
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -468,6 +791,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+  },
+  statusBarNotice: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusBarBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+  },
+  statusDotGreen: {
+    backgroundColor: '#10B981',
+  },
+  statusDotAmber: {
+    backgroundColor: '#F59E0B',
+  },
+  statusNoticeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#E2E8F0',
+  },
+  statusScopeText: {
+    fontSize: 9,
+    color: '#94A3B8',
+    fontWeight: '600',
   },
   header: {
     paddingHorizontal: 16,
@@ -694,12 +1051,20 @@ const styles = StyleSheet.create({
     color: '#475569',
     marginTop: 1,
   },
-  tradeoffHeading: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#64748B',
+  tradeoffHeadingContainer: {
     marginTop: 14,
-    marginBottom: 6,
+    marginBottom: 8,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#D97706',
+  },
+  tradeoffHeading: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#92400E',
     letterSpacing: 0.5,
   },
   tradeoffBox: {
@@ -922,4 +1287,383 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 14,
   },
+  chatHeaderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0F172A',
+    borderRadius: 16,
+    padding: 14,
+    gap: 12,
+  },
+  chatAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(45, 212, 191, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(45, 212, 191, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chatAvatarText: {
+    fontSize: 18,
+  },
+  chatHeaderTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  chatHeaderSubtitle: {
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  chatQuickRow: {
+    flexDirection: 'row',
+    marginVertical: 4,
+  },
+  chatChip: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginRight: 8,
+  },
+  chatChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  chatBubbleContainer: {
+    width: '100%',
+    marginVertical: 4,
+  },
+  chatBubbleUserContainer: {
+    alignItems: 'flex-end',
+  },
+  chatBubbleBotContainer: {
+    alignItems: 'flex-start',
+  },
+  chatBubble: {
+    maxWidth: '88%',
+    borderRadius: 16,
+    padding: 12,
+  },
+  chatBubbleUser: {
+    backgroundColor: '#0F172A',
+    borderBottomRightRadius: 2,
+  },
+  chatBubbleBot: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderBottomLeftRadius: 2,
+  },
+  chatText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  chatTextUser: {
+    color: '#FFFFFF',
+  },
+  chatTextBot: {
+    color: '#1E293B',
+  },
+  chatCostCard: {
+    marginTop: 8,
+    backgroundColor: '#0F172A',
+    borderRadius: 10,
+    padding: 10,
+  },
+  chatCostTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#2DD4BF',
+    textTransform: 'uppercase',
+  },
+  chatCostWeekly: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginVertical: 2,
+  },
+  chatCostSub: {
+    fontSize: 9,
+    color: '#94A3B8',
+  },
+  chatCostDeposit: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#FBBF24',
+    marginTop: 4,
+  },
+  chatRepliesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 6,
+    paddingHorizontal: 4,
+  },
+  chatReplyButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  chatReplyText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  chatTypingText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontStyle: 'italic',
+  },
+  chatInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 6,
+    paddingLeft: 12,
+  },
+  chatTextInput: {
+    flex: 1,
+    fontSize: 12,
+    color: '#0F172A',
+    paddingVertical: 4,
+  },
+  chatSendButton: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  chatSendText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2DD4BF',
+  },
+  scopeNoticeBox: {
+    backgroundColor: '#F1F5F9',
+    borderRadius: 8,
+    padding: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#64748B',
+  },
+  scopeNoticeText: {
+    fontSize: 10,
+    color: '#475569',
+    lineHeight: 14,
+  },
+  specialistCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderLeftWidth: 4,
+    borderLeftColor: '#0F172A',
+  },
+  specialistLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#64748B',
+    letterSpacing: 0.5,
+  },
+  specialistTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginVertical: 4,
+  },
+  specialistText: {
+    fontSize: 11,
+    color: '#334155',
+    lineHeight: 16,
+  },
+  listingTitleLarge: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  bankValueLarge: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#047857',
+  },
+  costLabelLarge: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  trueCostValueLarge: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  perkTitleLarge: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#475569',
+    marginBottom: 4,
+  },
+  perkItemLarge: {
+    fontSize: 12,
+    color: '#1E293B',
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  registerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#0F766E',
+    borderLeftWidth: 4,
+  },
+  registerBadge: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#0F766E',
+    letterSpacing: 0.5,
+  },
+  registerTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginVertical: 4,
+  },
+  registerDesc: {
+    fontSize: 11,
+    color: '#475569',
+    lineHeight: 16,
+    marginBottom: 10,
+  },
+  registerBtnRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  registerPrimaryBtn: {
+    flex: 1,
+    backgroundColor: '#0F766E',
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  registerPrimaryBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  registerSecondaryBtn: {
+    flex: 1,
+    backgroundColor: '#F0FDFA',
+    borderWidth: 1,
+    borderColor: '#99F6E4',
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  registerSecondaryBtnText: {
+    color: '#0F766E',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  opticalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  opticalBadge: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#6366F1',
+    letterSpacing: 0.5,
+  },
+  opticalTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  opticalRule: {
+    marginBottom: 6,
+  },
+  opticalRuleHead: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  opticalRuleBody: {
+    fontSize: 11,
+    color: '#475569',
+    lineHeight: 15,
+    marginTop: 1,
+  },
+  manualInputContainer: {
+    marginBottom: 14,
+  },
+  manualInputLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 6,
+  },
+  manualInputRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  manualInputField: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  manualInputSaveBtn: {
+    backgroundColor: '#0F172A',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    justifyContent: 'center',
+  },
+  manualInputSaveText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  presetLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    marginBottom: 8,
+  },
+  budgetMarkerTag: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#64748B',
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+  budgetMarkerTagActive: {
+    color: '#2DD4BF',
+  },
 });
+

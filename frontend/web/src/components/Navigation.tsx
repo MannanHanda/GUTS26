@@ -16,6 +16,7 @@ import {
   HeartPulse,
   User as UserIcon,
   LogIn,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -36,8 +37,10 @@ export function Navbar() {
     { href: '/transport', label: 'Transit Passes', icon: Bus },
     { href: '/banking', label: 'Student Banking', icon: CreditCard },
     { href: '/healthcare', label: 'NHS Healthcare', icon: HeartPulse },
+    { href: '/chat', label: 'AI Advisor', icon: Bot, badge: 'AI' },
     { href: '/onboarding', label: 'My Budget', icon: Sliders },
   ];
+
 
   return (
     <header suppressHydrationWarning className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
@@ -57,7 +60,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-1" aria-label="Main Navigation">
+          <nav suppressHydrationWarning className="hidden md:flex items-center space-x-1" aria-label="Main Navigation">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -65,6 +68,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
+                  suppressHydrationWarning
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                     isActive
                       ? 'bg-slate-100 text-slate-900 border border-slate-200'
@@ -73,9 +77,15 @@ export function Navbar() {
                 >
                   <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-teal-700' : 'text-slate-400'}`} />
                   {link.label}
+                  {link.badge && (
+                    <span className="text-[9px] bg-teal-500 text-slate-950 font-black px-1.5 py-0.5 rounded-full leading-none">
+                      {link.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
+
           </nav>
 
           {/* Right Actions */}
@@ -139,6 +149,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                suppressHydrationWarning
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold ${
                   isActive
@@ -147,7 +158,12 @@ export function Navbar() {
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-teal-700' : 'text-slate-400'}`} />
-                {link.label}
+                <span className="flex-1">{link.label}</span>
+                {link.badge && (
+                  <span className="text-[9px] bg-teal-500 text-slate-950 font-black px-1.5 py-0.5 rounded-full leading-none">
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             );
           })}

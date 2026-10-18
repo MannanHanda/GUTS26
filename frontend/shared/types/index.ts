@@ -192,3 +192,38 @@ export interface ApiResponse<T> {
   };
   error?: string;
 }
+
+export interface ChatCostBreakdown {
+  title: string;
+  rentWeekly: number;
+  billsWeekly: number;
+  transitWeekly: number;
+  totalWeekly: number;
+  totalMonthly: number;
+  upfrontDeposit: number;
+  hoursCommuteWeekly: number;
+}
+
+export interface ChatSuggestedAction {
+  label: string;
+  href: string;
+  icon?: 'home' | 'transit' | 'bank' | 'health' | 'budget';
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'assistant' | 'system';
+  text: string;
+  timestamp: string;
+  quickReplies?: string[];
+  suggestedActions?: ChatSuggestedAction[];
+  costBreakdown?: ChatCostBreakdown;
+}
+
+export interface ChatResponse {
+  reply: string;
+  quickReplies?: string[];
+  suggestedActions?: ChatSuggestedAction[];
+  costBreakdown?: ChatCostBreakdown;
+}
+
