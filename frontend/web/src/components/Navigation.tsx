@@ -51,16 +51,11 @@ export function Navbar() {
             <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-sm group-hover:bg-slate-800 transition">
               <Wallet className="w-4 h-4 text-teal-400" />
             </div>
-            <div>
-              <span className="font-bold text-slate-900 tracking-tight text-base block leading-none">
-                The Hidden Cost
-              </span>
-              <span className="text-[11px] text-slate-500 font-medium">of Being a Student</span>
-            </div>
+            <span className="font-bold text-slate-900 tracking-tight text-lg leading-none">Uniwise</span>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav suppressHydrationWarning className="hidden md:flex items-center space-x-1" aria-label="Main Navigation">
+          <nav suppressHydrationWarning className="hidden xl:flex items-center gap-0.5" aria-label="Main Navigation">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -69,7 +64,7 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   suppressHydrationWarning
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  className={`flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
                     isActive
                       ? 'bg-slate-100 text-slate-900 border border-slate-200'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -126,7 +121,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center">
+          <div className="flex xl:hidden items-center">
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -141,7 +136,7 @@ export function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1 animate-slide-down">
+        <div className="xl:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-4 space-y-1 animate-slide-down">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;

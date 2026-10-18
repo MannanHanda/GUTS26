@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { ChatMessage, ChatResponse, ChatCostBreakdown } from '@/shared/types';
 import { apiClient } from '@/shared/api-client';
+import { formatInline } from '@/lib/format-inline';
 
 const STARTER_PROMPTS = [
   {
@@ -203,12 +204,6 @@ export default function ChatPage() {
         })}
       </div>
     );
-  };
-
-  const formatInline = (str: string) => {
-    return str
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-slate-900">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="italic text-slate-600">$1</em>');
   };
 
   return (
