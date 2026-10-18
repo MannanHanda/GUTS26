@@ -378,9 +378,9 @@ Codes: `validation_error` (422), `not_found` (404), `method_not_allowed` (405), 
 
 | Question from the brief | Our answer |
 |---|---|
-| Where was AI used? | **To build the product**, not inside it: AI coding assistants helped write code and documentation. The product calls no AI service at runtime. |
-| What decisions stayed human? | Choosing data sources and what to exclude, transcribing and dating every curated figure, the scoring factors and hard-limit rules, and every product decision. |
-| How was output checked? | Reading every diff, 71 automated tests, ruff and type checks, and comparing curated figures against the official pages named in Section 6. |
+| Where was AI used? | **To build the product**, not inside it. The team wrote most of the code; AI coding assistants were used as a tool for drafting, refactoring, debugging, tests and documentation. The product calls no AI service at runtime. |
+| What decisions stayed human? | **All the engineering decisions**: the architecture and three-layer split, the API contract, choosing data sources and what to exclude, transcribing and dating every curated figure, the scoring factors and hard-limit rules, failure handling, and every product and design decision. |
+| How was output checked? | A team member reviewed every AI-suggested change before keeping it. The checks were 71 automated tests, ruff and type checks, and comparing curated figures against the official pages named in Section 6. |
 | What happens if AI is unavailable or wrong? | Nothing depends on AI at runtime, so there's no AI failure path in the recommendation. If an LLM is added to Finley later, it will be grounded in the engine's structured output, checked against it, and fall back to the current rules. |
 
 > An LLM call alone is not a solution. That's why the decision is made by a testable engine, and any future language layer would only turn its structured output into prose.

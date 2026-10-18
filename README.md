@@ -266,9 +266,9 @@ If nothing passes, the API returns `no_feasible_options` and suggests which limi
 
 **About "Finley".** The chat assistant is labelled "AI Advisor" in the interface, but it's rule-based. It matches keywords in the question and fills in pre-written answers (`frontend/web/src/shared/calculations/chat-engine.ts`). Its figures, such as estimated bills or a 5-week deposit, are illustrative general guidance. They don't come from the decision engine and don't affect any recommendation. The client tries a `/api/v1/chat` endpoint first; the backend doesn't implement one, so the local rules always answer.
 
-**Where AI was used to build it.** AI coding assistants helped write parts of the code and documentation (the repository includes `AGENTS.md` files and [spec section 25](./PROJECT_SPEC.md) for that workflow). Their output was checked by reading the diff, the 71 backend tests, the linter and the type checker, and the curated figures were transcribed from the official pages named in the data sources table, with their verification dates recorded.
+**Where AI was used to build it.** We used AI coding assistants as a tool during development. The team wrote most of the code. The assistants helped with drafting, refactoring, debugging, tests and documentation (the repository includes `AGENTS.md` files and [spec section 25](./PROJECT_SPEC.md) for that workflow). Every change they suggested was reviewed by a team member before it was kept, and checked with the 71 backend tests, the linter and the type checker.
 
-**What stayed human.** Choosing the data sources and deciding what to exclude, transcribing and dating the curated figures, the scoring weights and hard limits, and every product decision.
+**What stayed human.** All the engineering decisions: the architecture and its three-layer split, the API contract, choosing the data sources and what to exclude, transcribing and dating the curated figures, the scoring factors, weights and hard-limit rules, how failures are handled, and every product and design decision.
 
 **How the output is checked.** The engine is deterministic, so the same profile always gives the same result, and the tests cover constraints, costs, scoring and the HTTP contract. The raw research files are shown with an `unverified` label and are kept out of the decision path.
 

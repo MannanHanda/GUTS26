@@ -34,9 +34,9 @@ Uniwise brings these together: the student enters their budget, commute limit, a
 | `/dashboard` | Recommendation, score breakdown chart, reasons, trade-offs | Response of `POST /api/v1/recommendations/setup` | Connected to backend |
 | `/accommodation` | Browse, filter, and compare rooms with live filters | `GET /api/v1/accommodations` | Connected to backend |
 | `/transport` | Compare walking, cycling, and Subway from residence to campus | `GET /api/v1/transport/options` | Connected to backend |
-| `/banking` | Compare student bank accounts and overdraft limits | Curated dataset with Illustrative Data banner | Integrated |
-| `/healthcare` | NHS Scotland entitlements (£0 prescriptions, free dental <26) | Curated dataset with Illustrative Data banner | Integrated |
-| `/chat` & Global Widget | Finley AI Student Living Advisor chatbot | `POST /api/v1/chat` + deterministic fallback | Integrated |
+| `/banking` | Compare student bank accounts and overdraft limits | Local illustrative data (unverified research leads), no backend | Illustrative |
+| `/healthcare` | NHS Scotland entitlements (£0 prescriptions, free dental <26) | Local illustrative data, no backend | Illustrative |
+| `/chat` & Global Widget | "Finley" student living assistant | Rule-based keyword matching in `shared/calculations/chat-engine.ts` (no language model); tries `POST /api/v1/chat` first, which the backend does not implement | Illustrative |
 | `/errors` | Animated Glasgow Subway error screens & offline handling | Dedicated error catalog and online detector | Live |
 
 The mobile app (`mobile/App.tsx`) has matching tabs (`True Cost`, `Housing`, `Transit`, `Banking`, `Health`, `AI Chat`).
@@ -56,7 +56,8 @@ The single source of truth is [`../docs/openapi.json`](../docs/openapi.json), al
 | GET | `/api/v1/transport/options` | Transport page |
 | GET | `/api/v1/benefits` | Concessions and Young Scot under-22 free bus scheme |
 | POST | `/api/v1/recommendations/setup` | Onboarding and dashboard |
-| POST | `/api/v1/chat` | AI Living Advisor conversational engine |
+
+The chat client also calls `POST /api/v1/chat`, which is not part of the contract. The backend returns 404 and the chat falls back to its local rules.
 
 ---
 
