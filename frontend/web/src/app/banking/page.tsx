@@ -7,12 +7,7 @@ import {
   CheckCircle2, 
   ExternalLink, 
   ShieldCheck, 
-  ArrowRight,
-  Sparkles,
-  HelpCircle,
-  AlertCircle,
   UserCheck,
-  Building2,
   FileText,
   MapPin
 } from 'lucide-react';
@@ -25,22 +20,24 @@ import { DictionaryTooltip } from '@/components/DictionaryTooltip';
 export default function BankingPage() {
   const [banks, setBanks] = useState<BankAccount[]>([]);
   const [profile, setProfile] = useState<StudentProfile>(DEFAULT_STUDENT_PROFILE);
-  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // localStorage only exists in the browser, so the saved profile is read after hydration
+    // (reading it during render would make the server and client HTML differ).
     try {
       const saved = localStorage.getItem('student_finance_profile');
       if (saved) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off sync from browser storage
         setProfile(JSON.parse(saved));
       }
     } catch (e) {
       console.warn('Could not read saved profile:', e);
     }
 
-    apiClient.getBankingOptions().then((res) => {
-      setBanks(res.data);
-      setLoading(false);
-    });
+    apiClient
+      .getBankingOptions()
+      .then((res) => setBanks(res.data))
+      .catch((e) => console.warn('Could not load banking options:', e));
   }, []);
 
   return (
@@ -94,7 +91,7 @@ export default function BankingPage() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold mb-3 border border-teal-400/30">
               <UserCheck className="w-4 h-4 text-teal-400" />
-              Inside Tip: Ask for a "Student Specialist"
+              Inside Tip: Ask for a &ldquo;Student Specialist&rdquo;
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
               What is a <DictionaryTooltip termKey="student_specialist"><span className="text-teal-300 underline decoration-teal-400">Student Specialist</span></DictionaryTooltip> at UK Banks?

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Bot,
-  X,
   Send,
   Sparkles,
   Maximize2,
@@ -19,9 +18,8 @@ import {
   Check,
   Calculator,
   ArrowRight,
-  ShieldAlert,
 } from 'lucide-react';
-import { ChatMessage, ChatResponse, ChatCostBreakdown } from '@/shared/types';
+import { ChatMessage, ChatResponse } from '@/shared/types';
 import { apiClient } from '@/shared/api-client';
 import { formatInline } from '@/lib/format-inline';
 

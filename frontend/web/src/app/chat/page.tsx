@@ -7,22 +7,14 @@ import {
   Send,
   Sparkles,
   Trash2,
-  Building2,
-  Bus,
-  CreditCard,
-  HeartPulse,
   Sliders,
   Copy,
   Check,
   Calculator,
   ArrowRight,
   ShieldCheck,
-  HelpCircle,
-  TrendingDown,
-  RefreshCw,
-  ExternalLink,
 } from 'lucide-react';
-import { ChatMessage, ChatResponse, ChatCostBreakdown } from '@/shared/types';
+import { ChatMessage, ChatResponse } from '@/shared/types';
 import { apiClient } from '@/shared/api-client';
 import { formatInline } from '@/lib/format-inline';
 

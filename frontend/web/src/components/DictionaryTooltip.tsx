@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { HelpCircle, Info, BookOpen } from 'lucide-react';
+import { HelpCircle, BookOpen } from 'lucide-react';
 
 export interface DictionaryEntry {
   term: string;

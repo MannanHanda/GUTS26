@@ -38,7 +38,6 @@ import { ErrorScreen } from '@/components/errors/ErrorScreen';
 import { CalculatingBadge, SkeletonDashboard } from '@/components/LoadingSkeleton';
 import { Toast } from '@/components/Toast';
 import { useAuth } from '@/context/AuthContext';
-import { DictionaryTooltip } from '@/components/DictionaryTooltip';
 
 const MODE_LABEL: Record<string, string> = { walk: 'Walking', cycle: 'Cycling', subway: 'Subway' };
 const FACTOR_COLOURS: Record<string, string> = {

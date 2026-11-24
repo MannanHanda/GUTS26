@@ -11,17 +11,10 @@ import {
   ExternalLink, 
   CheckCircle2, 
   Sparkles, 
-  Building2, 
   Stethoscope, 
-  Pill, 
-  Smile, 
-  Eye, 
   Clock, 
-  Info, 
   ArrowRight,
-  Filter,
   Search,
-  HelpCircle,
   Activity
 } from 'lucide-react';
 import { apiClient } from '@/shared/api-client';
